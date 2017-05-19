@@ -1,0 +1,12 @@
+# Elm files:
+elm-stuff
+repl-temp-*
+
+# Editor files:
+TAGS
+
+# OS files:
+.DS_Store
+
+# Emacs files:
+\#*\#

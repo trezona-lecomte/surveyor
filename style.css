@@ -1,0 +1,64 @@
+html,
+body {
+  height: 100%;
+  margin: 0
+}
+
+.page {
+    display: flex;
+    flex-flow: column;          /* ? */
+    height: 100%;
+}
+
+#main-menu {
+    flex: 0 1 auto;
+}
+
+#tab-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#title-and-description {
+    /* display: flex; */
+    /* flex-flow: column; */
+}
+
+.radio-buttons {
+    display: flex;
+    border: none;
+}
+
+.question {
+    display: flex;
+    flex-flow: column;
+}
+
+/* .page .content.container { */
+/*     flex: 1 1 auto; */
+/*     display: flex; */
+/*     flex-flow: column;          /\* ? *\/ */
+/*     height: 100%; */
+/* } */
+
+/* .content .address.input { */
+/*     flex: 0 0 32px; */
+/* } */
+
+/* .address.input .label { */
+/*   display: flex; */
+/*   justify-content: center; */
+/*   flex-direction: column; */
+/*   text-align: center; */
+/* } */
+
+/* .content .feed { */
+/*     flex: 6 1 auto; */
+/*     overflow: scroll; */
+/* } */
+
+/* .content .form { */
+/*     flex: 0 0 40px; */
+/*     padding-bottom: 10px; */
+/* } */
