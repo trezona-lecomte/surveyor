@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 
 
 type Question
-    = OpenEnded { prompt : String, answer : String }
-    | MultiChoice { prompt : String, options : List String, answer : String }
-    | NumberRange { prompt : String, range : ( Int, Int ), answer : Int }
-    | OrdinalScale { prompt : String, options : List String, answers : Dict Int String }
+    = OpenEnded { editing : Bool, prompt : String, answer : String }
+    | MultiChoice { editing : Bool, prompt : String, options : List String, answer : String }
+    | NumberRange { editing : Bool, prompt : String, range : ( Int, Int ), answer : Int }
+    | OrdinalScale { editing : Bool, prompt : String, options : List String, answers : Dict Int String }
