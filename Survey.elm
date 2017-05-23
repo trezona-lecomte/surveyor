@@ -4,9 +4,8 @@ module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (Html, a, div, fieldset, input, label, option, select, text, textarea)
 import Html.Attributes exposing (autofocus, class, id, name, placeholder, type_, value)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
 import List exposing (map)
-import SampleData exposing (questions)
 import Types exposing (..)
 
 
@@ -25,7 +24,17 @@ type alias Tab =
 
 init : ( Model, Cmd Msg )
 init =
-    Model "Untitled form" "" SampleData.questions [ "questions", "answers" ] "questions" ! []
+    Model "Untitled form" "" defaultQuestions [ "questions", "answers" ] "questions" ! []
+
+
+defaultQuestions : List Question
+defaultQuestions =
+    [ { format = MultiChoice
+      , prompt = "Untitled Question"
+      , options = [ "Option 1" ]
+      , active = False
+      }
+    ]
 
 
 
@@ -35,6 +44,9 @@ init =
 type Msg
     = TabClicked Tab
     | QuestionClicked String
+    | TitleEdited String
+    | DescriptionEdited String
+      -- | PromptEdited Question String
     | NoOp
 
 
@@ -47,6 +59,14 @@ update msg model =
         QuestionClicked prompt ->
             { model | questions = List.map (toggleEditingQuestion prompt) model.questions } ! []
 
+        TitleEdited title ->
+            { model | title = title } ! []
+
+        DescriptionEdited description ->
+            { model | description = description } ! []
+
+        -- PromptEdited ( question, prompt ) ->
+        --     { model | questions = description == description } ! []
         NoOp ->
             model ! []
 
@@ -54,27 +74,13 @@ update msg model =
 toggleEditingQuestion : String -> Question -> Question
 toggleEditingQuestion prompt question =
     let
-        newEditing q =
-            if (Debug.log "question prompt" q.prompt) == (Debug.log "clicked prompt" prompt) then
-                (not q.editing)
-            else if q.editing then
-                (not q.editing)
-            else
-                q.editing
+        alreadyActive =
+            question.active
+
+        newlyActive =
+            question.prompt == prompt
     in
-        case question of
-            OpenEnded q ->
-                OpenEnded
-                    { q | editing = newEditing q }
-
-            MultiChoice q ->
-                MultiChoice { q | editing = newEditing q }
-
-            NumberRange q ->
-                NumberRange { q | editing = newEditing q }
-
-            OrdinalScale q ->
-                OrdinalScale { q | editing = newEditing q }
+        { question | active = alreadyActive || newlyActive }
 
 
 
@@ -116,10 +122,10 @@ tabMenuItem model tab =
 titleAndDescription : Model -> Html Msg
 titleAndDescription model =
     div [ class "ui segment", id "title-and-description" ]
-        [ div [ class "ui massive fluid xtransparent input" ]
-            [ input [ type_ "text", value model.title, autofocus True ] [] ]
-        , div [ class "ui large fluid xtransparent input" ]
-            [ input [ type_ "text", value model.description, placeholder "Form description" ] [] ]
+        [ div [ class "ui massive fluid input" ]
+            [ input [ type_ "text", value model.title, autofocus True, onInput TitleEdited ] [] ]
+        , div [ class "ui large fluid input" ]
+            [ input [ type_ "text", value model.description, placeholder "Form description", onInput DescriptionEdited ] [] ]
         ]
 
 
@@ -137,50 +143,55 @@ surveySection model =
 
 viewQuestion : Model -> Question -> Html Msg
 viewQuestion model question =
-    case question of
-        OpenEnded q ->
-            (editableQuestion model
-                q
-                [ textarea [ value q.answer ] []
+    case question.format of
+        OpenEnded ->
+            (editableQuestion question
+                []
+            )
+
+        MultiChoice ->
+            (editableQuestion question
+                [ fieldset [ class "radio-buttons" ] (map (radio NoOp question.prompt) question.options)
                 ]
             )
 
-        MultiChoice q ->
-            (editableQuestion model
-                q
-                [ fieldset [ class "radio-buttons" ] (map (radio NoOp q.prompt) q.options)
+        NumberRange ->
+            (editableQuestion question
+                [ select [] []
                 ]
             )
 
-        NumberRange q ->
-            (editableQuestion model
-                q
-                [ select [] (map optionForNumber (List.range (Tuple.first q.range) (Tuple.second q.range)))
-                ]
-            )
-
-        OrdinalScale q ->
-            (editableQuestion model
-                q
-                [ fieldset [] (map (radio NoOp q.prompt) q.options)
+        OrdinalScale ->
+            (editableQuestion question
+                [ fieldset [] (map (radio NoOp question.prompt) question.options)
                 ]
             )
 
 
-editableQuestion : Model -> { a | prompt : String, editing : Bool } -> List (Html Msg) -> Html Msg
-editableQuestion model { prompt, editing } elements =
+editableQuestion : Question -> List (Html Msg) -> Html Msg
+editableQuestion question elements =
     let
-        editingClass =
-            if editing then
+        activeClass =
+            if question.active then
                 " raised red"
             else
                 ""
     in
         div
-            [ class ("ui segment question" ++ editingClass)
-            , onClick (QuestionClicked prompt)
+            [ class ("ui segment question" ++ activeClass)
+            , onClick (QuestionClicked question.prompt)
             ]
-            ([ text prompt ] ++ elements)
+            ([ questionPrompt question ] ++ elements)
+
+
+questionPrompt : Question -> Html Msg
+questionPrompt { prompt } =
+    input
+        [ type_ "text"
+        , value prompt
+          -- , onInput PromptEdited questiony
+        ]
+        []
 
 
 optionForNumber : Int -> Html Msg

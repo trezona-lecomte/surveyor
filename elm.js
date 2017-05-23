@@ -8260,172 +8260,25 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
-var _user$project$Types$OrdinalScale = function (a) {
-	return {ctor: 'OrdinalScale', _0: a};
+var _user$project$Types$Question = F4(
+	function (a, b, c, d) {
+		return {format: a, prompt: b, options: c, active: d};
+	});
+var _user$project$Types$OrdinalScale = {ctor: 'OrdinalScale'};
+var _user$project$Types$NumberRange = {ctor: 'NumberRange'};
+var _user$project$Types$MultiChoice = {ctor: 'MultiChoice'};
+var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
+var _user$project$Types$OrdinalAnswer = function (a) {
+	return {ctor: 'OrdinalAnswer', _0: a};
 };
-var _user$project$Types$NumberRange = function (a) {
-	return {ctor: 'NumberRange', _0: a};
+var _user$project$Types$NumberAnswer = function (a) {
+	return {ctor: 'NumberAnswer', _0: a};
 };
-var _user$project$Types$MultiChoice = function (a) {
-	return {ctor: 'MultiChoice', _0: a};
+var _user$project$Types$MultiAnswer = function (a) {
+	return {ctor: 'MultiAnswer', _0: a};
 };
-var _user$project$Types$OpenEnded = function (a) {
-	return {ctor: 'OpenEnded', _0: a};
-};
-
-var _user$project$SampleData$questions = {
-	ctor: '::',
-	_0: _user$project$Types$MultiChoice(
-		{
-			editing: false,
-			prompt: 'Please tick status:',
-			options: {
-				ctor: '::',
-				_0: 'Job-seeker',
-				_1: {
-					ctor: '::',
-					_0: 'Employer',
-					_1: {ctor: '[]'}
-				}
-			},
-			answer: ''
-		}),
-	_1: {
-		ctor: '::',
-		_0: _user$project$Types$MultiChoice(
-			{
-				editing: false,
-				prompt: 'Do you have a LinkedIn or other professional networking account?',
-				options: {
-					ctor: '::',
-					_0: 'Yes',
-					_1: {
-						ctor: '::',
-						_0: 'No',
-						_1: {ctor: '[]'}
-					}
-				},
-				answer: ''
-			}),
-		_1: {
-			ctor: '::',
-			_0: _user$project$Types$MultiChoice(
-				{
-					editing: false,
-					prompt: 'How often do you use your LinkedIn / other professional networking account?',
-					options: {
-						ctor: '::',
-						_0: 'Every day',
-						_1: {
-							ctor: '::',
-							_0: 'Every week',
-							_1: {
-								ctor: '::',
-								_0: 'Every month',
-								_1: {
-									ctor: '::',
-									_0: 'Seldom',
-									_1: {ctor: '[]'}
-								}
-							}
-						}
-					},
-					answer: ''
-				}),
-			_1: {
-				ctor: '::',
-				_0: _user$project$Types$MultiChoice(
-					{
-						editing: false,
-						prompt: 'How many jobs opportunities have you found via your LinkedIn / other professional networking account?',
-						options: {
-							ctor: '::',
-							_0: 'None',
-							_1: {
-								ctor: '::',
-								_0: 'One',
-								_1: {
-									ctor: '::',
-									_0: 'More than one',
-									_1: {ctor: '[]'}
-								}
-							}
-						},
-						answer: ''
-					}),
-				_1: {
-					ctor: '::',
-					_0: _user$project$Types$MultiChoice(
-						{
-							editing: false,
-							prompt: 'Do you / have you ever had a business mentor?',
-							options: {
-								ctor: '::',
-								_0: 'Yes',
-								_1: {
-									ctor: '::',
-									_0: 'No',
-									_1: {ctor: '[]'}
-								}
-							},
-							answer: ''
-						}),
-					_1: {
-						ctor: '::',
-						_0: _user$project$Types$MultiChoice(
-							{
-								editing: false,
-								prompt: 'Would you use an online service that allows employers to rate your professional performance and makes this information available to other employers?',
-								options: {
-									ctor: '::',
-									_0: 'Yes',
-									_1: {
-										ctor: '::',
-										_0: 'No',
-										_1: {ctor: '[]'}
-									}
-								},
-								answer: ''
-							}),
-						_1: {
-							ctor: '::',
-							_0: _user$project$Types$MultiChoice(
-								{
-									editing: false,
-									prompt: 'Would you use an online service that allowed you to find and contact professional mentors?',
-									options: {
-										ctor: '::',
-										_0: 'Yes',
-										_1: {
-											ctor: '::',
-											_0: 'No',
-											_1: {ctor: '[]'}
-										}
-									},
-									answer: ''
-								}),
-							_1: {
-								ctor: '::',
-								_0: _user$project$Types$OpenEnded(
-									{editing: false, prompt: 'How much would you pay per year for an online service that provides you with access to a mentors from a range of industries?', answer: ''}),
-								_1: {
-									ctor: '::',
-									_0: _user$project$Types$OpenEnded(
-										{editing: false, prompt: 'How much would you pay per year for an online service that allows you to directly offer your services to employers on a short-term / trial basis?', answer: ''}),
-									_1: {
-										ctor: '::',
-										_0: _user$project$Types$OpenEnded(
-											{editing: false, prompt: 'How much would you pay for an online service that allows you to easily establish your own cooperative job-seeking / head-hunting company, and then recruit friends and colleagues to join?', answer: ''}),
-										_1: {ctor: '[]'}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+var _user$project$Types$OpenAnswer = function (a) {
+	return {ctor: 'OpenAnswer', _0: a};
 };
 
 var _user$project$Survey$subscriptions = function (model) {
@@ -8499,6 +8352,116 @@ var _user$project$Survey$optionForNumber = function (number) {
 			_1: {ctor: '[]'}
 		});
 };
+var _user$project$Survey$questionPrompt = function (_p0) {
+	var _p1 = _p0;
+	return A2(
+		_elm_lang$html$Html$input,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$type_('text'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$value(_p1.prompt),
+				_1: {ctor: '[]'}
+			}
+		},
+		{ctor: '[]'});
+};
+var _user$project$Survey$toggleEditingQuestion = F2(
+	function (prompt, question) {
+		var newlyActive = _elm_lang$core$Native_Utils.eq(question.prompt, prompt);
+		var alreadyActive = question.active;
+		return _elm_lang$core$Native_Utils.update(
+			question,
+			{active: alreadyActive || newlyActive});
+	});
+var _user$project$Survey$update = F2(
+	function (msg, model) {
+		var _p2 = msg;
+		switch (_p2.ctor) {
+			case 'TabClicked':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{activeTab: _p2._0}),
+					{ctor: '[]'});
+			case 'QuestionClicked':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A2(
+								_elm_lang$core$List$map,
+								_user$project$Survey$toggleEditingQuestion(_p2._0),
+								model.questions)
+						}),
+					{ctor: '[]'});
+			case 'TitleEdited':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{title: _p2._0}),
+					{ctor: '[]'});
+			case 'DescriptionEdited':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{description: _p2._0}),
+					{ctor: '[]'});
+			default:
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					model,
+					{ctor: '[]'});
+		}
+	});
+var _user$project$Survey$defaultQuestions = {
+	ctor: '::',
+	_0: {
+		format: _user$project$Types$MultiChoice,
+		prompt: 'Untitled Question',
+		options: {
+			ctor: '::',
+			_0: 'Option 1',
+			_1: {ctor: '[]'}
+		},
+		active: false
+	},
+	_1: {ctor: '[]'}
+};
+var _user$project$Survey$Model = F5(
+	function (a, b, c, d, e) {
+		return {title: a, description: b, questions: c, tabs: d, activeTab: e};
+	});
+var _user$project$Survey$init = A2(
+	_elm_lang$core$Platform_Cmd_ops['!'],
+	A5(
+		_user$project$Survey$Model,
+		'Untitled form',
+		'',
+		_user$project$Survey$defaultQuestions,
+		{
+			ctor: '::',
+			_0: 'questions',
+			_1: {
+				ctor: '::',
+				_0: 'answers',
+				_1: {ctor: '[]'}
+			}
+		},
+		'questions'),
+	{ctor: '[]'});
+var _user$project$Survey$NoOp = {ctor: 'NoOp'};
+var _user$project$Survey$DescriptionEdited = function (a) {
+	return {ctor: 'DescriptionEdited', _0: a};
+};
+var _user$project$Survey$TitleEdited = function (a) {
+	return {ctor: 'TitleEdited', _0: a};
+};
 var _user$project$Survey$titleAndDescription = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -8517,7 +8480,7 @@ var _user$project$Survey$titleAndDescription = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('ui massive fluid xtransparent input'),
+					_0: _elm_lang$html$Html_Attributes$class('ui massive fluid input'),
 					_1: {ctor: '[]'}
 				},
 				{
@@ -8533,7 +8496,11 @@ var _user$project$Survey$titleAndDescription = function (model) {
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$html$Html_Attributes$autofocus(true),
-									_1: {ctor: '[]'}
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$TitleEdited),
+										_1: {ctor: '[]'}
+									}
 								}
 							}
 						},
@@ -8546,7 +8513,7 @@ var _user$project$Survey$titleAndDescription = function (model) {
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('ui large fluid xtransparent input'),
+						_0: _elm_lang$html$Html_Attributes$class('ui large fluid input'),
 						_1: {ctor: '[]'}
 					},
 					{
@@ -8562,7 +8529,11 @@ var _user$project$Survey$titleAndDescription = function (model) {
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Attributes$placeholder('Form description'),
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$DescriptionEdited),
+											_1: {ctor: '[]'}
+										}
 									}
 								}
 							},
@@ -8573,120 +8544,22 @@ var _user$project$Survey$titleAndDescription = function (model) {
 			}
 		});
 };
-var _user$project$Survey$toggleEditingQuestion = F2(
-	function (prompt, question) {
-		var newEditing = function (q) {
-			return _elm_lang$core$Native_Utils.eq(
-				A2(_elm_lang$core$Debug$log, 'question prompt', q.prompt),
-				A2(_elm_lang$core$Debug$log, 'clicked prompt', prompt)) ? (!q.editing) : (q.editing ? (!q.editing) : q.editing);
-		};
-		var _p0 = question;
-		switch (_p0.ctor) {
-			case 'OpenEnded':
-				var _p1 = _p0._0;
-				return _user$project$Types$OpenEnded(
-					_elm_lang$core$Native_Utils.update(
-						_p1,
-						{
-							editing: newEditing(_p1)
-						}));
-			case 'MultiChoice':
-				var _p2 = _p0._0;
-				return _user$project$Types$MultiChoice(
-					_elm_lang$core$Native_Utils.update(
-						_p2,
-						{
-							editing: newEditing(_p2)
-						}));
-			case 'NumberRange':
-				var _p3 = _p0._0;
-				return _user$project$Types$NumberRange(
-					_elm_lang$core$Native_Utils.update(
-						_p3,
-						{
-							editing: newEditing(_p3)
-						}));
-			default:
-				var _p4 = _p0._0;
-				return _user$project$Types$OrdinalScale(
-					_elm_lang$core$Native_Utils.update(
-						_p4,
-						{
-							editing: newEditing(_p4)
-						}));
-		}
-	});
-var _user$project$Survey$update = F2(
-	function (msg, model) {
-		var _p5 = msg;
-		switch (_p5.ctor) {
-			case 'TabClicked':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{activeTab: _p5._0}),
-					{ctor: '[]'});
-			case 'QuestionClicked':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								_user$project$Survey$toggleEditingQuestion(_p5._0),
-								model.questions)
-						}),
-					{ctor: '[]'});
-			default:
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					model,
-					{ctor: '[]'});
-		}
-	});
-var _user$project$Survey$Model = F5(
-	function (a, b, c, d, e) {
-		return {title: a, description: b, questions: c, tabs: d, activeTab: e};
-	});
-var _user$project$Survey$init = A2(
-	_elm_lang$core$Platform_Cmd_ops['!'],
-	A5(
-		_user$project$Survey$Model,
-		'Untitled form',
-		'',
-		_user$project$SampleData$questions,
-		{
-			ctor: '::',
-			_0: 'questions',
-			_1: {
-				ctor: '::',
-				_0: 'answers',
-				_1: {ctor: '[]'}
-			}
-		},
-		'questions'),
-	{ctor: '[]'});
-var _user$project$Survey$NoOp = {ctor: 'NoOp'};
 var _user$project$Survey$QuestionClicked = function (a) {
 	return {ctor: 'QuestionClicked', _0: a};
 };
-var _user$project$Survey$editableQuestion = F3(
-	function (model, _p6, elements) {
-		var _p7 = _p6;
-		var _p8 = _p7.prompt;
-		var editingClass = _p7.editing ? ' raised red' : '';
+var _user$project$Survey$editableQuestion = F2(
+	function (question, elements) {
+		var activeClass = question.active ? ' raised red' : '';
 		return A2(
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$class(
-					A2(_elm_lang$core$Basics_ops['++'], 'ui segment question', editingClass)),
+					A2(_elm_lang$core$Basics_ops['++'], 'ui segment question', activeClass)),
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Events$onClick(
-						_user$project$Survey$QuestionClicked(_p8)),
+						_user$project$Survey$QuestionClicked(question.prompt)),
 					_1: {ctor: '[]'}
 				}
 			},
@@ -8694,39 +8567,24 @@ var _user$project$Survey$editableQuestion = F3(
 				_elm_lang$core$Basics_ops['++'],
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p8),
+					_0: _user$project$Survey$questionPrompt(question),
 					_1: {ctor: '[]'}
 				},
 				elements));
 	});
 var _user$project$Survey$viewQuestion = F2(
 	function (model, question) {
-		var _p9 = question;
-		switch (_p9.ctor) {
+		var _p3 = question.format;
+		switch (_p3.ctor) {
 			case 'OpenEnded':
-				var _p10 = _p9._0;
-				return A3(
+				return A2(
 					_user$project$Survey$editableQuestion,
-					model,
-					_p10,
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$textarea,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$value(_p10.answer),
-								_1: {ctor: '[]'}
-							},
-							{ctor: '[]'}),
-						_1: {ctor: '[]'}
-					});
+					question,
+					{ctor: '[]'});
 			case 'MultiChoice':
-				var _p11 = _p9._0;
-				return A3(
+				return A2(
 					_user$project$Survey$editableQuestion,
-					model,
-					_p11,
+					question,
 					{
 						ctor: '::',
 						_0: A2(
@@ -8738,36 +8596,26 @@ var _user$project$Survey$viewQuestion = F2(
 							},
 							A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Survey$radio, _user$project$Survey$NoOp, _p11.prompt),
-								_p11.options)),
+								A2(_user$project$Survey$radio, _user$project$Survey$NoOp, question.prompt),
+								question.options)),
 						_1: {ctor: '[]'}
 					});
 			case 'NumberRange':
-				var _p12 = _p9._0;
-				return A3(
+				return A2(
 					_user$project$Survey$editableQuestion,
-					model,
-					_p12,
+					question,
 					{
 						ctor: '::',
 						_0: A2(
 							_elm_lang$html$Html$select,
 							{ctor: '[]'},
-							A2(
-								_elm_lang$core$List$map,
-								_user$project$Survey$optionForNumber,
-								A2(
-									_elm_lang$core$List$range,
-									_elm_lang$core$Tuple$first(_p12.range),
-									_elm_lang$core$Tuple$second(_p12.range)))),
+							{ctor: '[]'}),
 						_1: {ctor: '[]'}
 					});
 			default:
-				var _p13 = _p9._0;
-				return A3(
+				return A2(
 					_user$project$Survey$editableQuestion,
-					model,
-					_p13,
+					question,
 					{
 						ctor: '::',
 						_0: A2(
@@ -8775,8 +8623,8 @@ var _user$project$Survey$viewQuestion = F2(
 							{ctor: '[]'},
 							A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Survey$radio, _user$project$Survey$NoOp, _p13.prompt),
-								_p13.options)),
+								A2(_user$project$Survey$radio, _user$project$Survey$NoOp, question.prompt),
+								question.options)),
 						_1: {ctor: '[]'}
 					});
 		}

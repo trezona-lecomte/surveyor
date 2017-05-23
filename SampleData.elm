@@ -1,22 +1,23 @@
-module SampleData exposing (questions)
+-- module SampleData exposing (questions)
 
-import Types exposing (..)
+-- import Types exposing (..)
 
 
-questions : List Question
-questions =
-    [ MultiChoice { editing = False, prompt = "Please tick status:", options = [ "Job-seeker", "Employer" ], answer = "" }
-      -- , NumberRange { editing = False, prompt = "Age", range = ( 0, 120 ), answer = 0 }
-    , MultiChoice { editing = False, prompt = "Do you have a LinkedIn or other professional networking account?", options = [ "Yes", "No" ], answer = "" }
-    , MultiChoice { editing = False, prompt = "How often do you use your LinkedIn / other professional networking account?", options = [ "Every day", "Every week", "Every month", "Seldom" ], answer = "" }
-    , MultiChoice { editing = False, prompt = "How many jobs opportunities have you found via your LinkedIn / other professional networking account?", options = [ "None", "One", "More than one" ], answer = "" }
-    , MultiChoice { editing = False, prompt = "Do you / have you ever had a business mentor?", options = [ "Yes", "No" ], answer = "" }
-    , MultiChoice { editing = False, prompt = "Would you use an online service that allows employers to rate your professional performance and makes this information available to other employers?", options = [ "Yes", "No" ], answer = "" }
-    , MultiChoice { editing = False, prompt = "Would you use an online service that allowed you to find and contact professional mentors?", options = [ "Yes", "No" ], answer = "" }
-    , OpenEnded { editing = False, prompt = "How much would you pay per year for an online service that provides you with access to a mentors from a range of industries?", answer = "" }
-    , OpenEnded { editing = False, prompt = "How much would you pay per year for an online service that allows you to directly offer your services to employers on a short-term / trial basis?", answer = "" }
-    , OpenEnded { editing = False, prompt = "How much would you pay for an online service that allows you to easily establish your own cooperative job-seeking / head-hunting company, and then recruit friends and colleagues to join?", answer = "" }
-    ]
+-- questions : List Question
+-- questions =
+--     [
+    -- MultiChoice { editing = False, prompt = "Please tick status:", options = [ "Job-seeker", "Employer" ], answer = "" }
+     --   -- , NumberRange { editing = False, prompt = "Age", range = ( 0, 120 ), answer = 0 }
+     -- , MultiChoice { editing = False, prompt = "Do you have a LinkedIn or other professional networking account?", options = [ "Yes", "No" ], answer = "" }
+     -- , MultiChoice { editing = False, prompt = "How often do you use your LinkedIn / other professional networking account?", options = [ "Every day", "Every week", "Every month", "Seldom" ], answer = "" }
+     -- , MultiChoice { editing = False, prompt = "How many jobs opportunities have you found via your LinkedIn / other professional networking account?", options = [ "None", "One", "More than one" ], answer = "" }
+     -- , MultiChoice { editing = False, prompt = "Do you / have you ever had a business mentor?", options = [ "Yes", "No" ], answer = "" }
+     -- , MultiChoice { editing = False, prompt = "Would you use an online service that allows employers to rate your professional performance and makes this information available to other employers?", options = [ "Yes", "No" ], answer = "" }
+     -- , MultiChoice { editing = False, prompt = "Would you use an online service that allowed you to find and contact professional mentors?", options = [ "Yes", "No" ], answer = "" }
+     -- , OpenEnded { editing = False, prompt = "How much would you pay per year for an online service that provides you with access to a mentors from a range of industries?", answer = "" }
+     -- , OpenEnded { editing = False, prompt = "How much would you pay per year for an online service that allows you to directly offer your services to employers on a short-term / trial basis?", answer = "" }
+     -- , OpenEnded { editing = False, prompt = "How much would you pay for an online service that allows you to easily establish your own cooperative job-seeking / head-hunting company, and then recruit friends and colleagues to join?", answer = "" }
+    -- ]
 
 
 
