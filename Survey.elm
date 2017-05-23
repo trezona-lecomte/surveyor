@@ -4,8 +4,9 @@ module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (Html, a, div, fieldset, input, label, option, select, text, textarea)
 import Html.Attributes exposing (autofocus, class, id, name, placeholder, type_, value)
-import Html.Events exposing (onClick, onInput)
-import List exposing (map)
+import Html.Events exposing (onClick, onFocus, onInput)
+import List
+import Set
 import Types exposing (..)
 
 
@@ -31,7 +32,7 @@ defaultQuestions : List Question
 defaultQuestions =
     [ { format = MultiChoice
       , prompt = "Untitled Question"
-      , options = [ "Option 1" ]
+      , options = Set.fromList [ "Option 1" ]
       , active = False
       }
     ]
@@ -46,7 +47,9 @@ type Msg
     | QuestionClicked String
     | TitleEdited String
     | DescriptionEdited String
-      -- | PromptEdited Question String
+    | PromptEdited Question String
+    | OptionAdded Question
+    | OptionEdited Question Option Option
     | NoOp
 
 
@@ -65,8 +68,15 @@ update msg model =
         DescriptionEdited description ->
             { model | description = description } ! []
 
-        -- PromptEdited ( question, prompt ) ->
-        --     { model | questions = description == description } ! []
+        PromptEdited question prompt ->
+            { model | questions = List.map (editPrompt question prompt) model.questions } ! []
+
+        OptionAdded question ->
+            { model | questions = List.map (addOption question) model.questions } ! []
+
+        OptionEdited question option newOption ->
+            { model | questions = List.map (editOptionInQuestion question option newOption) model.questions } ! []
+
         NoOp ->
             model ! []
 
@@ -81,6 +91,41 @@ toggleEditingQuestion prompt question =
             question.prompt == prompt
     in
         { question | active = alreadyActive || newlyActive }
+
+
+editPrompt : Question -> String -> Question -> Question
+editPrompt editedQuestion newPrompt question =
+    if question == editedQuestion then
+        { question | prompt = newPrompt }
+    else
+        question
+
+
+editOptionInQuestion : Question -> Option -> Option -> Question -> Question
+editOptionInQuestion editedQuestion oldOption newOption question =
+    let
+        editOption o =
+            if o == oldOption then
+                newOption
+            else
+                o
+    in
+        if question == editedQuestion then
+            { question | options = Set.map editOption question.options }
+        else
+            question
+
+
+addOption : Question -> Question -> Question
+addOption addedOnQuestion question =
+    let
+        additionalOption =
+            "Option " ++ (toString (1 + Set.size question.options))
+    in
+        if question == addedOnQuestion then
+            { question | options = Set.insert additionalOption question.options }
+        else
+            question
 
 
 
@@ -104,7 +149,7 @@ view model =
 tabMenu : Model -> Html Msg
 tabMenu model =
     div [ class "ui large secondary pointing menu", id "tab-menu" ]
-        (map (tabMenuItem model) model.tabs)
+        (List.map (tabMenuItem model) model.tabs)
 
 
 tabMenuItem : Model -> Tab -> Html Msg
@@ -134,7 +179,7 @@ surveySection model =
     if model.activeTab == "questions" then
         div [ class "ui form questions" ]
             [ div [ class "grouped fields" ]
-                (map (viewQuestion model) model.questions)
+                (List.map (viewQuestion model) model.questions)
             ]
     else
         div [ class "answers" ]
@@ -143,29 +188,52 @@ surveySection model =
 
 viewQuestion : Model -> Question -> Html Msg
 viewQuestion model question =
-    case question.format of
-        OpenEnded ->
-            (editableQuestion question
-                []
-            )
+    let
+        options =
+            case question.format of
+                MultiChoice ->
+                    [ multiChoiceOptions question ]
 
-        MultiChoice ->
-            (editableQuestion question
-                [ fieldset [ class "radio-buttons" ] (map (radio NoOp question.prompt) question.options)
-                ]
-            )
+                _ ->
+                    []
+    in
+        editableQuestion question options
 
-        NumberRange ->
-            (editableQuestion question
-                [ select [] []
-                ]
-            )
 
-        OrdinalScale ->
-            (editableQuestion question
-                [ fieldset [] (map (radio NoOp question.prompt) question.options)
+multiChoiceOptions : Question -> Html Msg
+multiChoiceOptions question =
+    fieldset [ class "radio-buttons" ]
+        ((List.map (radio question) (Set.toList question.options))
+            ++ [ addOptionRadio question ]
+        )
+
+
+radio : Question -> String -> Html Msg
+radio question option =
+    div [ class "field" ]
+        [ div [ class "ui radio checkbox" ]
+            [ input [ type_ "radio", name question.prompt, onClick NoOp ] []
+            , label []
+                [ div [ class "ui transparent input" ]
+                    [ input [ value option, onInput (OptionEdited question option) ] []
+                    ]
                 ]
-            )
+            ]
+        ]
+
+
+addOptionRadio : Question -> Html Msg
+addOptionRadio question =
+    div [ class "field" ]
+        [ div [ class "ui radio checkbox" ]
+            [ input [ type_ "radio", name "Add option", onClick (OptionAdded question) ] []
+            , label []
+                [ div [ class "ui transparent input" ]
+                    [ input [ placeholder "Add option", onFocus (OptionAdded question) ] []
+                    ]
+                ]
+            ]
+        ]
 
 
 editableQuestion : Question -> List (Html Msg) -> Html Msg
@@ -185,11 +253,11 @@ editableQuestion question elements =
 
 
 questionPrompt : Question -> Html Msg
-questionPrompt { prompt } =
+questionPrompt question =
     input
         [ type_ "text"
-        , value prompt
-          -- , onInput PromptEdited questiony
+        , value question.prompt
+        , onInput (PromptEdited question)
         ]
         []
 
@@ -197,18 +265,6 @@ questionPrompt { prompt } =
 optionForNumber : Int -> Html Msg
 optionForNumber number =
     option [ value (toString number) ] [ text (toString number) ]
-
-
-radio : msg -> String -> String -> Html msg
-radio msg prompt option =
-    div [ class "field" ]
-        [ div [ class "ui radio checkbox" ]
-            [ input [ type_ "radio", name prompt, onClick msg ] []
-            , label []
-                [ text option
-                ]
-            ]
-        ]
 
 
 
