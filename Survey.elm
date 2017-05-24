@@ -161,7 +161,7 @@ tabMenuItem model tab =
 
 titleAndDescription : Model -> Html Msg
 titleAndDescription model =
-    div [ class "ui segment", id "title-and-description" ]
+    div [ class "ui segment" ]
         [ div [ class "ui massive fluid input" ]
             [ input [ type_ "text", value model.title, autofocus True, onInput TitleEdited ] [] ]
         , div [ class "ui large fluid input" ]

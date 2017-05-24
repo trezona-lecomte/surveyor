@@ -10012,11 +10012,7 @@ var _user$project$Survey$titleAndDescription = function (model) {
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Attributes$class('ui segment'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$id('title-and-description'),
-				_1: {ctor: '[]'}
-			}
+			_1: {ctor: '[]'}
 		},
 		{
 			ctor: '::',
