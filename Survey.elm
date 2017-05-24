@@ -214,9 +214,7 @@ viewQuestion model question =
 multiChoiceOptions : Question -> Html Msg
 multiChoiceOptions question =
     fieldset [ class "radio-buttons" ]
-        ((List.map (radio question) question.options)
-            ++ [ addOptionRadio question ]
-        )
+        ((List.map (radio question) question.options) ++ [ addOptionRadio question ])
 
 
 radio : Question -> String -> Html Msg
