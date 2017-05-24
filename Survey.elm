@@ -12,9 +12,10 @@ import Uuid
 type alias Model =
     { title : String
     , description : String
-    , questions : List Question
     , tabs : List Tab
     , activeTab : Tab
+    , questions : List Question
+    , activeQuestionId : Maybe QuestionId
     , uuidSeed : Pcg.Seed
     }
 
@@ -29,7 +30,15 @@ init =
         ( uuid, seed ) =
             Pcg.step Uuid.uuidGenerator (Pcg.initialSeed 291892861)
     in
-        Model "Untitled form" "" [ newQuestion [] uuid ] [ "questions", "answers" ] "questions" seed ! []
+        { title = "Untitled form"
+        , description = ""
+        , tabs = [ "questions", "answers" ]
+        , activeTab = "questions"
+        , questions = [ newQuestion [] uuid ]
+        , activeQuestionId = Nothing
+        , uuidSeed = seed
+        }
+            ! []
 
 
 
@@ -38,7 +47,7 @@ init =
 
 type Msg
     = TabClicked Tab
-    | QuestionClicked String
+    | QuestionClicked QuestionId
     | TitleEdited String
     | DescriptionEdited String
     | PromptEdited Question String
@@ -54,8 +63,8 @@ update msg model =
         TabClicked tab ->
             { model | activeTab = tab } ! []
 
-        QuestionClicked prompt ->
-            { model | questions = List.map (toggleEditingQuestion prompt) model.questions } ! []
+        QuestionClicked questionId ->
+            { model | activeQuestionId = Just questionId } ! []
 
         TitleEdited title ->
             { model | title = title } ! []
@@ -81,18 +90,6 @@ update msg model =
 
         NoOp ->
             model ! []
-
-
-toggleEditingQuestion : String -> Question -> Question
-toggleEditingQuestion prompt question =
-    let
-        alreadyActive =
-            question.active
-
-        newlyActive =
-            question.prompt == prompt
-    in
-        { question | active = alreadyActive || newlyActive }
 
 
 editPrompt : Question -> String -> Question -> Question
@@ -203,7 +200,7 @@ viewQuestion model question =
                 _ ->
                     []
     in
-        editableQuestion question options
+        editableQuestion model question options
 
 
 multiChoiceOptions : Question -> Html Msg
@@ -240,18 +237,23 @@ addOptionRadio question =
         ]
 
 
-editableQuestion : Question -> List (Html Msg) -> Html Msg
-editableQuestion question elements =
+editableQuestion : Model -> Question -> List (Html Msg) -> Html Msg
+editableQuestion model question elements =
     let
         activeClass =
-            if question.active then
-                " raised red"
-            else
-                ""
+            case model.activeQuestionId of
+                Just id ->
+                    if question.id == id then
+                        " raised red"
+                    else
+                        ""
+
+                Nothing ->
+                    ""
     in
         div
             [ class ("ui segment question" ++ activeClass)
-            , onClick (QuestionClicked question.prompt)
+            , onClick (QuestionClicked question.id)
             ]
             ([ questionPrompt question ] ++ elements)
 

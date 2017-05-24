@@ -9545,14 +9545,17 @@ var _user$project$Types$newOption = function (existingOptions) {
 			_elm_lang$core$Basics$toString(newIndex + 1))
 	};
 };
-var _user$project$Types$Question = F5(
-	function (a, b, c, d, e) {
-		return {id: a, format: b, prompt: c, options: d, active: e};
+var _user$project$Types$Question = F4(
+	function (a, b, c, d) {
+		return {id: a, format: b, prompt: c, options: d};
 	});
 var _user$project$Types$Option = F2(
 	function (a, b) {
 		return {index: a, text: b};
 	});
+var _user$project$Types$QuestionId = function (a) {
+	return {ctor: 'QuestionId', _0: a};
+};
 var _user$project$Types$OrdinalScale = {ctor: 'OrdinalScale'};
 var _user$project$Types$NumberRange = {ctor: 'NumberRange'};
 var _user$project$Types$MultiChoice = {ctor: 'MultiChoice'};
@@ -9560,7 +9563,7 @@ var _user$project$Types$newQuestion = F2(
 	function (existingQuestions, uuid) {
 		var newQuestionNumber = _elm_lang$core$List$length(existingQuestions) + 1;
 		return {
-			id: uuid,
+			id: _user$project$Types$QuestionId(uuid),
 			format: _user$project$Types$MultiChoice,
 			prompt: A2(
 				_elm_lang$core$Basics_ops['++'],
@@ -9571,8 +9574,7 @@ var _user$project$Types$newQuestion = F2(
 				_0: _user$project$Types$newOption(
 					{ctor: '[]'}),
 				_1: {ctor: '[]'}
-			},
-			active: false
+			}
 		};
 	});
 var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
@@ -9642,14 +9644,6 @@ var _user$project$Survey$editPrompt = F3(
 			question,
 			{prompt: newPrompt}) : question;
 	});
-var _user$project$Survey$toggleEditingQuestion = F2(
-	function (prompt, question) {
-		var newlyActive = _elm_lang$core$Native_Utils.eq(question.prompt, prompt);
-		var alreadyActive = question.active;
-		return _elm_lang$core$Native_Utils.update(
-			question,
-			{active: alreadyActive || newlyActive});
-	});
 var _user$project$Survey$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -9667,10 +9661,7 @@ var _user$project$Survey$update = F2(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								_user$project$Survey$toggleEditingQuestion(_p0._0),
-								model.questions)
+							activeQuestionId: _elm_lang$core$Maybe$Just(_p0._0)
 						}),
 					{ctor: '[]'});
 			case 'TitleEdited':
@@ -9750,10 +9741,6 @@ var _user$project$Survey$update = F2(
 					{ctor: '[]'});
 		}
 	});
-var _user$project$Survey$Model = F6(
-	function (a, b, c, d, e, f) {
-		return {title: a, description: b, questions: c, tabs: d, activeTab: e, uuidSeed: f};
-	});
 var _user$project$Survey$init = function () {
 	var _p2 = A2(
 		_mgold$elm_random_pcg$Random_Pcg$step,
@@ -9763,19 +9750,10 @@ var _user$project$Survey$init = function () {
 	var seed = _p2._1;
 	return A2(
 		_elm_lang$core$Platform_Cmd_ops['!'],
-		A6(
-			_user$project$Survey$Model,
-			'Untitled form',
-			'',
-			{
-				ctor: '::',
-				_0: A2(
-					_user$project$Types$newQuestion,
-					{ctor: '[]'},
-					uuid),
-				_1: {ctor: '[]'}
-			},
-			{
+		{
+			title: 'Untitled form',
+			description: '',
+			tabs: {
 				ctor: '::',
 				_0: 'questions',
 				_1: {
@@ -9784,10 +9762,24 @@ var _user$project$Survey$init = function () {
 					_1: {ctor: '[]'}
 				}
 			},
-			'questions',
-			seed),
+			activeTab: 'questions',
+			questions: {
+				ctor: '::',
+				_0: A2(
+					_user$project$Types$newQuestion,
+					{ctor: '[]'},
+					uuid),
+				_1: {ctor: '[]'}
+			},
+			activeQuestionId: _elm_lang$core$Maybe$Nothing,
+			uuidSeed: seed
+		},
 		{ctor: '[]'});
 }();
+var _user$project$Survey$Model = F7(
+	function (a, b, c, d, e, f, g) {
+		return {title: a, description: b, tabs: c, activeTab: d, questions: e, activeQuestionId: f, uuidSeed: g};
+	});
 var _user$project$Survey$NoOp = {ctor: 'NoOp'};
 var _user$project$Survey$QuestionAdded = {ctor: 'QuestionAdded'};
 var _user$project$Survey$addQuestionButton = function (model) {
@@ -10099,9 +10091,16 @@ var _user$project$Survey$titleAndDescription = function (model) {
 var _user$project$Survey$QuestionClicked = function (a) {
 	return {ctor: 'QuestionClicked', _0: a};
 };
-var _user$project$Survey$editableQuestion = F2(
-	function (question, elements) {
-		var activeClass = question.active ? ' raised red' : '';
+var _user$project$Survey$editableQuestion = F3(
+	function (model, question, elements) {
+		var activeClass = function () {
+			var _p3 = model.activeQuestionId;
+			if (_p3.ctor === 'Just') {
+				return _elm_lang$core$Native_Utils.eq(question.id, _p3._0) ? ' raised red' : '';
+			} else {
+				return '';
+			}
+		}();
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -10111,7 +10110,7 @@ var _user$project$Survey$editableQuestion = F2(
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Events$onClick(
-						_user$project$Survey$QuestionClicked(question.prompt)),
+						_user$project$Survey$QuestionClicked(question.id)),
 					_1: {ctor: '[]'}
 				}
 			},
@@ -10127,8 +10126,8 @@ var _user$project$Survey$editableQuestion = F2(
 var _user$project$Survey$viewQuestion = F2(
 	function (model, question) {
 		var options = function () {
-			var _p3 = question.format;
-			if (_p3.ctor === 'MultiChoice') {
+			var _p4 = question.format;
+			if (_p4.ctor === 'MultiChoice') {
 				return {
 					ctor: '::',
 					_0: _user$project$Survey$multiChoiceOptions(question),
@@ -10138,7 +10137,7 @@ var _user$project$Survey$viewQuestion = F2(
 				return {ctor: '[]'};
 			}
 		}();
-		return A2(_user$project$Survey$editableQuestion, question, options);
+		return A3(_user$project$Survey$editableQuestion, model, question, options);
 	});
 var _user$project$Survey$surveySection = function (model) {
 	return _elm_lang$core$Native_Utils.eq(model.activeTab, 'questions') ? A2(

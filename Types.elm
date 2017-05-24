@@ -4,12 +4,15 @@ import Dict exposing (Dict)
 import Uuid exposing (Uuid)
 
 
+type QuestionId
+    = QuestionId Uuid
+
+
 type alias Question =
-    { id : Uuid
+    { id : QuestionId
     , format : QuestionFormat
     , prompt : String
     , options : List Option
-    , active : Bool
     }
 
 
@@ -39,11 +42,10 @@ newQuestion existingQuestions uuid =
         newQuestionNumber =
             List.length existingQuestions + 1
     in
-        { id = uuid
+        { id = QuestionId uuid
         , format = MultiChoice
         , prompt = "Untitled Question " ++ (toString newQuestionNumber)
         , options = [ newOption [] ]
-        , active = False
         }
 
 
