@@ -1,17 +1,12 @@
 module Types exposing (..)
 
 import Dict exposing (Dict)
-
-
--- type Question
---     = OpenEnded { editing : Bool, prompt : String, answer : String }
---     | MultiChoice { editing : Bool, prompt : String, options : List String, answer : String }
---     | NumberRange { editing : Bool, prompt : String, range : ( Int, Int ), answer : Int }
---     | OrdinalScale { editing : Bool, prompt : String, options : List String, answers : Dict Int String }
+import Uuid exposing (Uuid)
 
 
 type alias Question =
-    { format : QuestionFormat
+    { id : Uuid
+    , format : QuestionFormat
     , prompt : String
     , options : List Option
     , active : Bool
@@ -26,7 +21,9 @@ type QuestionFormat
 
 
 type alias Option =
-    String
+    { index : Int
+    , text : String
+    }
 
 
 type Answer
@@ -34,3 +31,26 @@ type Answer
     | MultiAnswer String
     | NumberAnswer Int
     | OrdinalAnswer (Dict Int String)
+
+
+newQuestion : List Question -> Uuid -> Question
+newQuestion existingQuestions uuid =
+    let
+        newQuestionNumber =
+            List.length existingQuestions + 1
+    in
+        { id = uuid
+        , format = MultiChoice
+        , prompt = "Untitled Question " ++ (toString newQuestionNumber)
+        , options = [ newOption [] ]
+        , active = False
+        }
+
+
+newOption : List Option -> Option
+newOption existingOptions =
+    let
+        newIndex =
+            List.length existingOptions
+    in
+        { index = newIndex, text = "Option " ++ (toString (newIndex + 1)) }

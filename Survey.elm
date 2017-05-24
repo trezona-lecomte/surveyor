@@ -1,13 +1,12 @@
 module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
--- import Dict exposing (Dict)
-
 import Html exposing (Html, a, div, fieldset, input, label, option, select, text, textarea)
 import Html.Attributes exposing (autofocus, class, id, name, placeholder, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput)
 import List
-import Set
+import Random.Pcg as Pcg
 import Types exposing (..)
+import Uuid
 
 
 type alias Model =
@@ -16,6 +15,7 @@ type alias Model =
     , questions : List Question
     , tabs : List Tab
     , activeTab : Tab
+    , uuidSeed : Pcg.Seed
     }
 
 
@@ -25,16 +25,11 @@ type alias Tab =
 
 init : ( Model, Cmd Msg )
 init =
-    Model "Untitled form" "" [ defaultQuestion 1 ] [ "questions", "answers" ] "questions" ! []
-
-
-defaultQuestion : Int -> Question
-defaultQuestion number =
-    { format = MultiChoice
-    , prompt = "Untitled Question " ++ (toString number)
-    , options = [ "Option 1" ]
-    , active = False
-    }
+    let
+        ( uuid, seed ) =
+            Pcg.step Uuid.uuidGenerator (Pcg.initialSeed 291892861)
+    in
+        Model "Untitled form" "" [ newQuestion [] uuid ] [ "questions", "answers" ] "questions" seed ! []
 
 
 
@@ -48,7 +43,7 @@ type Msg
     | DescriptionEdited String
     | PromptEdited Question String
     | OptionAdded Question
-    | OptionEdited Question Option Option
+    | OptionEdited Question Option String
     | QuestionAdded
     | NoOp
 
@@ -74,11 +69,15 @@ update msg model =
         OptionAdded question ->
             { model | questions = List.map (addOption question) model.questions } ! []
 
-        OptionEdited question option newOption ->
-            { model | questions = List.map (editOptionInQuestion question option newOption) model.questions } ! []
+        OptionEdited question option newText ->
+            { model | questions = List.map (editOptionInQuestion question option newText) model.questions } ! []
 
         QuestionAdded ->
-            { model | questions = model.questions ++ [ defaultQuestion (List.length model.questions + 1) ] } ! []
+            let
+                ( newUuid, newSeed ) =
+                    Pcg.step Uuid.uuidGenerator model.uuidSeed
+            in
+                { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] } ! []
 
         NoOp ->
             model ! []
@@ -104,14 +103,14 @@ editPrompt editedQuestion newPrompt question =
         question
 
 
-editOptionInQuestion : Question -> Option -> Option -> Question -> Question
-editOptionInQuestion editedQuestion oldOption newOption question =
+editOptionInQuestion : Question -> Option -> String -> Question -> Question
+editOptionInQuestion editedQuestion editedOption newText question =
     let
-        editOption o =
-            if o == oldOption then
-                newOption
+        editOption option =
+            if option.index == editedOption.index then
+                { option | text = newText }
             else
-                o
+                option
     in
         if question == editedQuestion then
             { question | options = List.map editOption question.options }
@@ -121,14 +120,10 @@ editOptionInQuestion editedQuestion oldOption newOption question =
 
 addOption : Question -> Question -> Question
 addOption addedOnQuestion question =
-    let
-        additionalOption =
-            "Option " ++ (toString (1 + List.length question.options))
-    in
-        if question == addedOnQuestion then
-            { question | options = question.options ++ [ additionalOption ] }
-        else
-            question
+    if question == addedOnQuestion then
+        { question | options = question.options ++ [ newOption question.options ] }
+    else
+        question
 
 
 
@@ -217,14 +212,14 @@ multiChoiceOptions question =
         ((List.map (radio question) question.options) ++ [ addOptionRadio question ])
 
 
-radio : Question -> String -> Html Msg
+radio : Question -> Option -> Html Msg
 radio question option =
     div [ class "field" ]
         [ div [ class "ui radio checkbox" ]
             [ input [ type_ "radio", name question.prompt, onClick NoOp ] []
             , label []
                 [ div [ class "ui transparent input" ]
-                    [ input [ value option, onInput (OptionEdited question option) ] []
+                    [ input [ value option.text, onInput (OptionEdited question option) ] []
                     ]
                 ]
             ]
