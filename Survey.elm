@@ -49,6 +49,7 @@ type Msg
     | PromptEdited Question String
     | OptionAdded Question
     | OptionEdited Question Option Option
+    | QuestionAdded
     | NoOp
 
 
@@ -75,6 +76,9 @@ update msg model =
 
         OptionEdited question option newOption ->
             { model | questions = List.map (editOptionInQuestion question option newOption) model.questions } ! []
+
+        QuestionAdded ->
+            { model | questions = model.questions ++ [ defaultQuestion (List.length model.questions + 1) ] } ! []
 
         NoOp ->
             model ! []
@@ -178,11 +182,19 @@ surveySection model =
     if model.activeTab == "questions" then
         div [ class "ui form questions" ]
             [ div [ class "grouped fields" ]
-                (List.map (viewQuestion model) model.questions)
+                ((List.map (viewQuestion model) model.questions)
+                    ++ [ addQuestionButton model ]
+                )
             ]
     else
         div [ class "answers" ]
             [ text "No responses yet." ]
+
+
+addQuestionButton : Model -> Html Msg
+addQuestionButton model =
+    div [ class "ui bottom attached button", onClick QuestionAdded ]
+        [ text "Add Question" ]
 
 
 viewQuestion : Model -> Question -> Html Msg
