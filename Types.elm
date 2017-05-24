@@ -1,7 +1,6 @@
 module Types exposing (..)
 
 import Dict exposing (Dict)
-import Set exposing (Set)
 
 
 -- type Question
@@ -14,7 +13,7 @@ import Set exposing (Set)
 type alias Question =
     { format : QuestionFormat
     , prompt : String
-    , options : Set Option
+    , options : List Option
     , active : Bool
     }
 

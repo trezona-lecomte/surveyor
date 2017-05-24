@@ -8437,11 +8437,18 @@ var _user$project$Survey$addOption = F2(
 			_elm_lang$core$Basics_ops['++'],
 			'Option ',
 			_elm_lang$core$Basics$toString(
-				1 + _elm_lang$core$Set$size(question.options)));
+				1 + _elm_lang$core$List$length(question.options)));
 		return _elm_lang$core$Native_Utils.eq(question, addedOnQuestion) ? _elm_lang$core$Native_Utils.update(
 			question,
 			{
-				options: A2(_elm_lang$core$Set$insert, additionalOption, question.options)
+				options: A2(
+					_elm_lang$core$Basics_ops['++'],
+					question.options,
+					{
+						ctor: '::',
+						_0: additionalOption,
+						_1: {ctor: '[]'}
+					})
 			}) : question;
 	});
 var _user$project$Survey$editOptionInQuestion = F4(
@@ -8452,7 +8459,7 @@ var _user$project$Survey$editOptionInQuestion = F4(
 		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
 			question,
 			{
-				options: A2(_elm_lang$core$Set$map, editOption, question.options)
+				options: A2(_elm_lang$core$List$map, editOption, question.options)
 			}) : question;
 	});
 var _user$project$Survey$editPrompt = F3(
@@ -8469,6 +8476,21 @@ var _user$project$Survey$toggleEditingQuestion = F2(
 			question,
 			{active: alreadyActive || newlyActive});
 	});
+var _user$project$Survey$defaultQuestion = function (number) {
+	return {
+		format: _user$project$Types$MultiChoice,
+		prompt: A2(
+			_elm_lang$core$Basics_ops['++'],
+			'Untitled Question ',
+			_elm_lang$core$Basics$toString(number)),
+		options: {
+			ctor: '::',
+			_0: 'Option 1',
+			_1: {ctor: '[]'}
+		},
+		active: false
+	};
+};
 var _user$project$Survey$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -8542,6 +8564,23 @@ var _user$project$Survey$update = F2(
 								model.questions)
 						}),
 					{ctor: '[]'});
+			case 'QuestionAdded':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A2(
+								_elm_lang$core$Basics_ops['++'],
+								model.questions,
+								{
+									ctor: '::',
+									_0: _user$project$Survey$defaultQuestion(
+										_elm_lang$core$List$length(model.questions) + 1),
+									_1: {ctor: '[]'}
+								})
+						}),
+					{ctor: '[]'});
 			default:
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
@@ -8549,21 +8588,6 @@ var _user$project$Survey$update = F2(
 					{ctor: '[]'});
 		}
 	});
-var _user$project$Survey$defaultQuestions = {
-	ctor: '::',
-	_0: {
-		format: _user$project$Types$MultiChoice,
-		prompt: 'Untitled Question',
-		options: _elm_lang$core$Set$fromList(
-			{
-				ctor: '::',
-				_0: 'Option 1',
-				_1: {ctor: '[]'}
-			}),
-		active: false
-	},
-	_1: {ctor: '[]'}
-};
 var _user$project$Survey$Model = F5(
 	function (a, b, c, d, e) {
 		return {title: a, description: b, questions: c, tabs: d, activeTab: e};
@@ -8574,7 +8598,11 @@ var _user$project$Survey$init = A2(
 		_user$project$Survey$Model,
 		'Untitled form',
 		'',
-		_user$project$Survey$defaultQuestions,
+		{
+			ctor: '::',
+			_0: _user$project$Survey$defaultQuestion(1),
+			_1: {ctor: '[]'}
+		},
 		{
 			ctor: '::',
 			_0: 'questions',
@@ -8587,6 +8615,25 @@ var _user$project$Survey$init = A2(
 		'questions'),
 	{ctor: '[]'});
 var _user$project$Survey$NoOp = {ctor: 'NoOp'};
+var _user$project$Survey$QuestionAdded = {ctor: 'QuestionAdded'};
+var _user$project$Survey$addQuestionButton = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('ui bottom attached button'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onClick(_user$project$Survey$QuestionAdded),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Add Question'),
+			_1: {ctor: '[]'}
+		});
+};
 var _user$project$Survey$OptionEdited = F3(
 	function (a, b, c) {
 		return {ctor: 'OptionEdited', _0: a, _1: b, _2: c};
@@ -8757,7 +8804,7 @@ var _user$project$Survey$multiChoiceOptions = function (question) {
 			A2(
 				_elm_lang$core$List$map,
 				_user$project$Survey$radio(question),
-				_elm_lang$core$Set$toList(question.options)),
+				question.options),
 			{
 				ctor: '::',
 				_0: _user$project$Survey$addOptionRadio(question),
@@ -8937,9 +8984,16 @@ var _user$project$Survey$surveySection = function (model) {
 					_1: {ctor: '[]'}
 				},
 				A2(
-					_elm_lang$core$List$map,
-					_user$project$Survey$viewQuestion(model),
-					model.questions)),
+					_elm_lang$core$Basics_ops['++'],
+					A2(
+						_elm_lang$core$List$map,
+						_user$project$Survey$viewQuestion(model),
+						model.questions),
+					{
+						ctor: '::',
+						_0: _user$project$Survey$addQuestionButton(model),
+						_1: {ctor: '[]'}
+					})),
 			_1: {ctor: '[]'}
 		}) : A2(
 		_elm_lang$html$Html$div,

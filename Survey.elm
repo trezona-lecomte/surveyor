@@ -25,17 +25,16 @@ type alias Tab =
 
 init : ( Model, Cmd Msg )
 init =
-    Model "Untitled form" "" defaultQuestions [ "questions", "answers" ] "questions" ! []
+    Model "Untitled form" "" [ defaultQuestion 1 ] [ "questions", "answers" ] "questions" ! []
 
 
-defaultQuestions : List Question
-defaultQuestions =
-    [ { format = MultiChoice
-      , prompt = "Untitled Question"
-      , options = Set.fromList [ "Option 1" ]
-      , active = False
-      }
-    ]
+defaultQuestion : Int -> Question
+defaultQuestion number =
+    { format = MultiChoice
+    , prompt = "Untitled Question " ++ (toString number)
+    , options = [ "Option 1" ]
+    , active = False
+    }
 
 
 
@@ -111,7 +110,7 @@ editOptionInQuestion editedQuestion oldOption newOption question =
                 o
     in
         if question == editedQuestion then
-            { question | options = Set.map editOption question.options }
+            { question | options = List.map editOption question.options }
         else
             question
 
@@ -120,10 +119,10 @@ addOption : Question -> Question -> Question
 addOption addedOnQuestion question =
     let
         additionalOption =
-            "Option " ++ (toString (1 + Set.size question.options))
+            "Option " ++ (toString (1 + List.length question.options))
     in
         if question == addedOnQuestion then
-            { question | options = Set.insert additionalOption question.options }
+            { question | options = question.options ++ [ additionalOption ] }
         else
             question
 
@@ -203,7 +202,7 @@ viewQuestion model question =
 multiChoiceOptions : Question -> Html Msg
 multiChoiceOptions question =
     fieldset [ class "radio-buttons" ]
-        ((List.map (radio question) (Set.toList question.options))
+        ((List.map (radio question) question.options)
             ++ [ addOptionRadio question ]
         )
 
