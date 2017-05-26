@@ -1,5 +1,6 @@
 module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
+import DRY exposing (..)
 import Html exposing (Html, a, div, fieldset, h1, h2, h3, h4, h5, h6, i, input, label, option, select, text, textarea)
 import Html.Attributes exposing (autofocus, class, id, name, placeholder, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput)
@@ -26,15 +27,15 @@ init =
         ( uuid, seed ) =
             Pcg.step Uuid.uuidGenerator (Pcg.initialSeed 291892861)
     in
-        { title = ""
-        , description = ""
-        , tabs = [ "questions", "answers" ]
-        , activeTab = "questions"
-        , questions = [ newQuestion [] uuid ]
-        , activeQuestionId = Nothing
-        , uuidSeed = seed
-        }
-            ! []
+        noCmd
+            { title = ""
+            , description = ""
+            , tabs = [ "questions", "answers" ]
+            , activeTab = "questions"
+            , questions = [ newQuestion [] uuid ]
+            , activeQuestionId = Nothing
+            , uuidSeed = seed
+            }
 
 
 
@@ -57,35 +58,35 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TabClicked tab ->
-            { model | activeTab = tab } ! []
+            noCmd { model | activeTab = tab }
 
         QuestionClicked questionId ->
-            { model | activeQuestionId = Just questionId } ! []
+            noCmd { model | activeQuestionId = Just questionId }
 
         TitleEdited title ->
-            { model | title = title } ! []
+            noCmd { model | title = title }
 
         DescriptionEdited description ->
-            { model | description = description } ! []
+            noCmd { model | description = description }
 
         PromptEdited question prompt ->
-            { model | questions = List.map (editPrompt question prompt) model.questions } ! []
+            noCmd { model | questions = List.map (editPrompt question prompt) model.questions }
 
         OptionAdded question ->
-            { model | questions = List.map (addOption question) model.questions } ! []
+            noCmd { model | questions = List.map (addOption question) model.questions }
 
         OptionEdited question option newText ->
-            { model | questions = List.map (editOptionInQuestion question option newText) model.questions } ! []
+            noCmd { model | questions = List.map (editOptionInQuestion question option newText) model.questions }
 
         QuestionAdded ->
             let
                 ( newUuid, newSeed ) =
                     Pcg.step Uuid.uuidGenerator model.uuidSeed
             in
-                { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] } ! []
+                noCmd { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] }
 
         NoOp ->
-            model ! []
+            noCmd model
 
 
 editPrompt : Question -> String -> Question -> Question

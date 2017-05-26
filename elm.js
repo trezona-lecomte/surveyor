@@ -9535,6 +9535,13 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
+var _user$project$DRY$noCmd = function (model) {
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		model,
+		{ctor: '[]'});
+};
+
 var _user$project$Types$newOption = function (existingOptions) {
 	var newIndex = _elm_lang$core$List$length(existingOptions);
 	return {
@@ -9715,38 +9722,29 @@ var _user$project$Survey$update = F2(
 		var _p0 = msg;
 		switch (_p0.ctor) {
 			case 'TabClicked':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{activeTab: _p0._0}),
-					{ctor: '[]'});
+						{activeTab: _p0._0}));
 			case 'QuestionClicked':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
 							activeQuestionId: _elm_lang$core$Maybe$Just(_p0._0)
-						}),
-					{ctor: '[]'});
+						}));
 			case 'TitleEdited':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{title: _p0._0}),
-					{ctor: '[]'});
+						{title: _p0._0}));
 			case 'DescriptionEdited':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{description: _p0._0}),
-					{ctor: '[]'});
+						{description: _p0._0}));
 			case 'PromptEdited':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
@@ -9754,11 +9752,9 @@ var _user$project$Survey$update = F2(
 								_elm_lang$core$List$map,
 								A2(_user$project$Survey$editPrompt, _p0._0, _p0._1),
 								model.questions)
-						}),
-					{ctor: '[]'});
+						}));
 			case 'OptionAdded':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
@@ -9766,11 +9762,9 @@ var _user$project$Survey$update = F2(
 								_elm_lang$core$List$map,
 								_user$project$Survey$addOption(_p0._0),
 								model.questions)
-						}),
-					{ctor: '[]'});
+						}));
 			case 'OptionEdited':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
@@ -9778,14 +9772,12 @@ var _user$project$Survey$update = F2(
 								_elm_lang$core$List$map,
 								A3(_user$project$Survey$editOptionInQuestion, _p0._0, _p0._1, _p0._2),
 								model.questions)
-						}),
-					{ctor: '[]'});
+						}));
 			case 'QuestionAdded':
 				var _p1 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
 				var newUuid = _p1._0;
 				var newSeed = _p1._1;
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
@@ -9798,13 +9790,9 @@ var _user$project$Survey$update = F2(
 									_0: A2(_user$project$Types$newQuestion, model.questions, newUuid),
 									_1: {ctor: '[]'}
 								})
-						}),
-					{ctor: '[]'});
+						}));
 			default:
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					model,
-					{ctor: '[]'});
+				return _user$project$DRY$noCmd(model);
 		}
 	});
 var _user$project$Survey$init = function () {
@@ -9814,8 +9802,7 @@ var _user$project$Survey$init = function () {
 		_mgold$elm_random_pcg$Random_Pcg$initialSeed(291892861));
 	var uuid = _p2._0;
 	var seed = _p2._1;
-	return A2(
-		_elm_lang$core$Platform_Cmd_ops['!'],
+	return _user$project$DRY$noCmd(
 		{
 			title: '',
 			description: '',
@@ -9839,8 +9826,7 @@ var _user$project$Survey$init = function () {
 			},
 			activeQuestionId: _elm_lang$core$Maybe$Nothing,
 			uuidSeed: seed
-		},
-		{ctor: '[]'});
+		});
 }();
 var _user$project$Survey$Model = F7(
 	function (a, b, c, d, e, f, g) {
