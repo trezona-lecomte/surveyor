@@ -10064,16 +10064,12 @@ var _user$project$Survey$questionPrompt = function (question) {
 				_elm_lang$html$Html$input,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$type_('text'),
+					_0: _elm_lang$html$Html_Attributes$value(question.prompt),
 					_1: {
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$value(question.prompt),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onInput(
-								_user$project$Survey$PromptEdited(question)),
-							_1: {ctor: '[]'}
-						}
+						_0: _elm_lang$html$Html_Events$onInput(
+							_user$project$Survey$PromptEdited(question)),
+						_1: {ctor: '[]'}
 					}
 				},
 				{ctor: '[]'}),
@@ -10114,24 +10110,20 @@ var _user$project$Survey$titleAndDescription = function (model) {
 								_elm_lang$html$Html$input,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$type_('text'),
+									_0: _elm_lang$html$Html_Attributes$id('title-input'),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$id('title-input'),
+										_0: _elm_lang$html$Html_Attributes$value(model.title),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$value(model.title),
+											_0: _elm_lang$html$Html_Attributes$placeholder('Untitled form'),
 											_1: {
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$placeholder('Untitled form'),
+												_0: _elm_lang$html$Html_Attributes$autofocus(true),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$autofocus(true),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$TitleEdited),
-														_1: {ctor: '[]'}
-													}
+													_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$TitleEdited),
+													_1: {ctor: '[]'}
 												}
 											}
 										}
@@ -10162,21 +10154,17 @@ var _user$project$Survey$titleAndDescription = function (model) {
 									_elm_lang$html$Html$input,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$type_('text'),
+										_0: _elm_lang$html$Html_Attributes$id('description-input'),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$id('description-input'),
+											_0: _elm_lang$html$Html_Attributes$value(model.description),
 											_1: {
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$value(model.description),
+												_0: _elm_lang$html$Html_Attributes$placeholder('Form description'),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$placeholder('Form description'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$DescriptionEdited),
-														_1: {ctor: '[]'}
-													}
+													_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$DescriptionEdited),
+													_1: {ctor: '[]'}
 												}
 											}
 										}

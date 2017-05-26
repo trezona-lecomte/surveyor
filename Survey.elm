@@ -163,9 +163,9 @@ titleAndDescription : Model -> Html Msg
 titleAndDescription model =
     div [ class "ui segment" ]
         [ div [ class "ui massive fluid input" ]
-            [ h1 [] [ input [ type_ "text", id "title-input", value model.title, placeholder "Untitled form", autofocus True, onInput TitleEdited ] [] ] ]
+            [ h1 [] [ input [ id "title-input", value model.title, placeholder "Untitled form", autofocus True, onInput TitleEdited ] [] ] ]
         , div [ class "ui large fluid input" ]
-            [ h2 [] [ input [ type_ "text", id "description-input", value model.description, placeholder "Form description", onInput DescriptionEdited ] [] ] ]
+            [ h2 [] [ input [ id "description-input", value model.description, placeholder "Form description", onInput DescriptionEdited ] [] ] ]
         ]
 
 
@@ -250,8 +250,7 @@ questionPrompt : Question -> Html Msg
 questionPrompt question =
     h3 []
         [ input
-            [ type_ "text"
-            , value question.prompt
+            [ value question.prompt
             , onInput (PromptEdited question)
             ]
             []
