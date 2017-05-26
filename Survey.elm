@@ -20,10 +20,6 @@ type alias Model =
     }
 
 
-type alias Tab =
-    String
-
-
 init : ( Model, Cmd Msg )
 init =
     let

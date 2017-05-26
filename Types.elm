@@ -4,6 +4,10 @@ import Dict exposing (Dict)
 import Uuid exposing (Uuid)
 
 
+type alias Tab =
+    String
+
+
 type QuestionId
     = QuestionId Uuid
 
