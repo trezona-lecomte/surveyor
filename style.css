@@ -14,6 +14,10 @@ body {
     flex: 0 1 auto;
 }
 
+#main-container {
+    width: 60%;
+}
+
 #tab-menu {
     display: flex;
     align-items: center;
@@ -28,4 +32,9 @@ body {
 .question {
     display: flex;
     flex-flow: column;
+}
+
+#title-input, #description-input {
+    border: none;
+    border-width:0px;
 }

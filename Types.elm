@@ -23,6 +23,11 @@ type QuestionFormat
     | OrdinalScale
 
 
+questionFormats : List String
+questionFormats =
+    [ "Open ended", "Multi choice" ]
+
+
 type alias Option =
     { index : Int
     , text : String

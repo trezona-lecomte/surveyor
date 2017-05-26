@@ -9545,6 +9545,15 @@ var _user$project$Types$newOption = function (existingOptions) {
 			_elm_lang$core$Basics$toString(newIndex + 1))
 	};
 };
+var _user$project$Types$questionFormats = {
+	ctor: '::',
+	_0: 'Open ended',
+	_1: {
+		ctor: '::',
+		_0: 'Multi choice',
+		_1: {ctor: '[]'}
+	}
+};
 var _user$project$Types$Question = F4(
 	function (a, b, c, d) {
 		return {id: a, format: b, prompt: c, options: d};
@@ -9594,19 +9603,76 @@ var _user$project$Types$OpenAnswer = function (a) {
 var _user$project$Survey$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
-var _user$project$Survey$optionForNumber = function (number) {
+var _user$project$Survey$questionFormatOption = function (format) {
 	return A2(
-		_elm_lang$html$Html$option,
+		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$value(
-				_elm_lang$core$Basics$toString(number)),
+			_0: _elm_lang$html$Html_Attributes$class('item'),
 			_1: {ctor: '[]'}
 		},
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html$text(
-				_elm_lang$core$Basics$toString(number)),
+			_0: A2(
+				_elm_lang$html$Html$i,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('folder icon'),
+					_1: {ctor: '[]'}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(format),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$Survey$questionFormatSelect = function (question) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('ui compact menu'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('ui simple dropdown item'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						_elm_lang$core$Basics$toString(question.format)),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$i,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('dropdown icon'),
+								_1: {ctor: '[]'}
+							},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('menu'),
+									_1: {ctor: '[]'}
+								},
+								A2(_elm_lang$core$List$map, _user$project$Survey$questionFormatOption, _user$project$Types$questionFormats)),
+							_1: {ctor: '[]'}
+						}
+					}
+				}),
 			_1: {ctor: '[]'}
 		});
 };
@@ -9751,7 +9817,7 @@ var _user$project$Survey$init = function () {
 	return A2(
 		_elm_lang$core$Platform_Cmd_ops['!'],
 		{
-			title: 'Untitled form',
+			title: '',
 			description: '',
 			tabs: {
 				ctor: '::',
@@ -9804,7 +9870,7 @@ var _user$project$Survey$OptionEdited = F3(
 	function (a, b, c) {
 		return {ctor: 'OptionEdited', _0: a, _1: b, _2: c};
 	});
-var _user$project$Survey$radio = F2(
+var _user$project$Survey$optionRadio = F2(
 	function (question, option) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -9857,18 +9923,25 @@ var _user$project$Survey$radio = F2(
 										{
 											ctor: '::',
 											_0: A2(
-												_elm_lang$html$Html$input,
+												_elm_lang$html$Html$h5,
+												{ctor: '[]'},
 												{
 													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$value(option.text),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onInput(
-															A2(_user$project$Survey$OptionEdited, question, option)),
-														_1: {ctor: '[]'}
-													}
-												},
-												{ctor: '[]'}),
+													_0: A2(
+														_elm_lang$html$Html$input,
+														{
+															ctor: '::',
+															_0: _elm_lang$html$Html_Attributes$value(option.text),
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$html$Html_Events$onInput(
+																	A2(_user$project$Survey$OptionEdited, question, option)),
+																_1: {ctor: '[]'}
+															}
+														},
+														{ctor: '[]'}),
+													_1: {ctor: '[]'}
+												}),
 											_1: {ctor: '[]'}
 										}),
 									_1: {ctor: '[]'}
@@ -9969,7 +10042,7 @@ var _user$project$Survey$multiChoiceOptions = function (question) {
 			_elm_lang$core$Basics_ops['++'],
 			A2(
 				_elm_lang$core$List$map,
-				_user$project$Survey$radio(question),
+				_user$project$Survey$optionRadio(question),
 				question.options),
 			{
 				ctor: '::',
@@ -9983,22 +10056,29 @@ var _user$project$Survey$PromptEdited = F2(
 	});
 var _user$project$Survey$questionPrompt = function (question) {
 	return A2(
-		_elm_lang$html$Html$input,
+		_elm_lang$html$Html$h3,
+		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$type_('text'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$value(question.prompt),
-				_1: {
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onInput(
-						_user$project$Survey$PromptEdited(question)),
-					_1: {ctor: '[]'}
-				}
-			}
-		},
-		{ctor: '[]'});
+					_0: _elm_lang$html$Html_Attributes$type_('text'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$value(question.prompt),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Events$onInput(
+								_user$project$Survey$PromptEdited(question)),
+							_1: {ctor: '[]'}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {ctor: '[]'}
+		});
 };
 var _user$project$Survey$DescriptionEdited = function (a) {
 	return {ctor: 'DescriptionEdited', _0: a};
@@ -10026,25 +10106,40 @@ var _user$project$Survey$titleAndDescription = function (model) {
 				{
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$input,
+						_elm_lang$html$Html$h1,
+						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$type_('text'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$value(model.title),
-								_1: {
+							_0: A2(
+								_elm_lang$html$Html$input,
+								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$autofocus(true),
+									_0: _elm_lang$html$Html_Attributes$type_('text'),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$TitleEdited),
-										_1: {ctor: '[]'}
+										_0: _elm_lang$html$Html_Attributes$id('title-input'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$value(model.title),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$placeholder('Untitled form'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$autofocus(true),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$TitleEdited),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
+										}
 									}
-								}
-							}
-						},
-						{ctor: '[]'}),
+								},
+								{ctor: '[]'}),
+							_1: {ctor: '[]'}
+						}),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -10059,25 +10154,36 @@ var _user$project$Survey$titleAndDescription = function (model) {
 					{
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$input,
+							_elm_lang$html$Html$h2,
+							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$type_('text'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$value(model.description),
-									_1: {
+								_0: A2(
+									_elm_lang$html$Html$input,
+									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$placeholder('Form description'),
+										_0: _elm_lang$html$Html_Attributes$type_('text'),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$DescriptionEdited),
-											_1: {ctor: '[]'}
+											_0: _elm_lang$html$Html_Attributes$id('description-input'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$value(model.description),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$placeholder('Form description'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$DescriptionEdited),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
 										}
-									}
-								}
-							},
-							{ctor: '[]'}),
+									},
+									{ctor: '[]'}),
+								_1: {ctor: '[]'}
+							}),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
@@ -10110,14 +10216,51 @@ var _user$project$Survey$editableQuestion = F3(
 					_1: {ctor: '[]'}
 				}
 			},
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				{
-					ctor: '::',
-					_0: _user$project$Survey$questionPrompt(question),
-					_1: {ctor: '[]'}
-				},
-				elements));
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('ui two column grid'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('twelve wide column'),
+								_1: {ctor: '[]'}
+							},
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								{
+									ctor: '::',
+									_0: _user$project$Survey$questionPrompt(question),
+									_1: {ctor: '[]'}
+								},
+								elements)),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('four wide column'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _user$project$Survey$questionFormatSelect(question),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
+					}),
+				_1: {ctor: '[]'}
+			});
 	});
 var _user$project$Survey$viewQuestion = F2(
 	function (model, question) {
@@ -10197,7 +10340,14 @@ var _user$project$Survey$tabMenuItem = F2(
 			},
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html$text(tab),
+				_0: A2(
+					_elm_lang$html$Html$h3,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(tab),
+						_1: {ctor: '[]'}
+					}),
 				_1: {ctor: '[]'}
 			});
 	});
@@ -10247,7 +10397,11 @@ var _user$project$Survey$view = function (model) {
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Attributes$class('ui content container'),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$id('main-container'),
+							_1: {ctor: '[]'}
+						}
 					},
 					{
 						ctor: '::',
