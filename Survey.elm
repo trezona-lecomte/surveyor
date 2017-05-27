@@ -44,13 +44,13 @@ init =
 
 type Msg
     = TabClicked Tab
-    | QuestionClicked QuestionId
     | TitleEdited String
     | DescriptionEdited String
+    | QuestionAdded
+    | QuestionClicked QuestionId
     | PromptEdited Question String
     | OptionAdded Question
     | OptionEdited Question Option String
-    | QuestionAdded
     | NoOp
 
 
@@ -60,14 +60,21 @@ update msg model =
         TabClicked tab ->
             noCmd { model | activeTab = tab }
 
-        QuestionClicked questionId ->
-            noCmd { model | activeQuestionId = Just questionId }
-
         TitleEdited title ->
             noCmd { model | title = title }
 
         DescriptionEdited description ->
             noCmd { model | description = description }
+
+        QuestionAdded ->
+            let
+                ( newUuid, newSeed ) =
+                    Pcg.step Uuid.uuidGenerator model.uuidSeed
+            in
+                noCmd { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] }
+
+        QuestionClicked questionId ->
+            noCmd { model | activeQuestionId = Just questionId }
 
         PromptEdited question prompt ->
             noCmd { model | questions = List.map (editPrompt question prompt) model.questions }
@@ -77,13 +84,6 @@ update msg model =
 
         OptionEdited question option newText ->
             noCmd { model | questions = List.map (editOptionInQuestion question option newText) model.questions }
-
-        QuestionAdded ->
-            let
-                ( newUuid, newSeed ) =
-                    Pcg.step Uuid.uuidGenerator model.uuidSeed
-            in
-                noCmd { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] }
 
         NoOp ->
             noCmd model
