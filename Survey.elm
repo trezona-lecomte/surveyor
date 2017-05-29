@@ -1,7 +1,7 @@
 module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
 import DRY exposing (..)
-import Html exposing (Html, a, div, fieldset, h1, h2, h3, h4, h5, h6, i, input, label, option, select, text, textarea)
+import Html exposing (Html, a, div, fieldset, h1, h2, h3, h4, h5, h6, i, input, label, li, option, select, text, textarea, ul)
 import Html.Attributes exposing (autofocus, class, id, name, placeholder, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput)
 import List
@@ -127,10 +127,11 @@ addOption addedOnQuestion question =
 view : Model -> Html Msg
 view model =
     div [ class "page" ]
-        [ div [ class "ui secondary pointing menu", id "main-menu" ] []
-        , div [ class "ui content container", id "main-container" ]
-            [ tabMenu model
-            , div [ class "ui segments" ]
+        [ div [ class "nav", id "main-menu" ] []
+        , div [ class "section" ]
+            [ div [ class "container" ]
+                [ tabMenu model ]
+            , div [ class "container" ]
                 [ titleAndDescription model
                 , surveySection model
                 ]
@@ -140,37 +141,55 @@ view model =
 
 tabMenu : Model -> Html Msg
 tabMenu model =
-    div [ class "ui large secondary pointing menu", id "tab-menu" ]
-        (List.map (tabMenuItem model) model.tabs)
+    div [ class "tabs is-centered is-large" ]
+        [ ul []
+            (List.map (tabMenuItem model) model.tabs)
+        ]
 
 
 tabMenuItem : Model -> Tab -> Html Msg
 tabMenuItem model tab =
-    let
-        tabClass =
-            if tab == model.activeTab then
-                "active item"
-            else
-                "item"
-    in
-        a [ class tabClass, onClick (TabClicked tab) ] [ h3 [] [ text tab ] ]
+    li
+        [ class
+            (if tab == model.activeTab then
+                "is-active"
+             else
+                ""
+            )
+        ]
+        [ a [ onClick (TabClicked tab) ]
+            [ text tab ]
+        ]
 
 
 titleAndDescription : Model -> Html Msg
 titleAndDescription model =
-    div [ class "ui segment" ]
-        [ div [ class "ui massive fluid input" ]
-            [ h1 [] [ input [ id "title-input", value model.title, placeholder "Untitled form", autofocus True, onInput TitleEdited ] [] ] ]
-        , div [ class "ui large fluid input" ]
-            [ h2 [] [ input [ id "description-input", value model.description, placeholder "Form description", onInput DescriptionEdited ] [] ] ]
+    div [ class "section" ]
+        [ input
+            [ class "input is-large"
+            , id "title-input"
+            , value model.title
+            , placeholder "Untitled form"
+            , autofocus True
+            , onInput TitleEdited
+            ]
+            []
+        , input
+            [ class "input is-medium"
+            , id "description-input"
+            , value model.description
+            , placeholder "Form description"
+            , onInput DescriptionEdited
+            ]
+            []
         ]
 
 
 surveySection : Model -> Html Msg
 surveySection model =
     if model.activeTab == "questions" then
-        div [ class "ui form questions" ]
-            [ div [ class "grouped fields" ]
+        div [ class "" ]
+            [ div [ class "" ]
                 ((List.map (viewQuestion model) model.questions)
                     ++ [ addQuestionButton model ]
                 )
@@ -209,13 +228,13 @@ editableQuestion model question elements =
                     ""
     in
         div
-            [ class ("ui segment question" ++ activeClass)
+            [ class ("box" ++ activeClass)
             , onClick (QuestionClicked question.id)
             ]
-            [ div [ class "ui two column grid" ]
-                [ div [ class "twelve wide column" ]
+            [ div [ class "columns" ]
+                [ div [ class "column is-two-thirds" ]
                     ([ questionPrompt question ] ++ elements)
-                , div [ class "four wide column" ]
+                , div [ class "column is-one-third" ]
                     [ questionFormatSelect question ]
                 ]
             ]
@@ -245,45 +264,60 @@ questionFormatOption format =
 
 questionPrompt : Question -> Html Msg
 questionPrompt question =
-    h3 []
-        [ input
-            [ value question.prompt
-            , onInput (PromptEdited question)
-            ]
-            []
+    input
+        [ class "input"
+        , value question.prompt
+        , onInput (PromptEdited question)
         ]
+        []
 
 
 multiChoiceOptions : Question -> Html Msg
 multiChoiceOptions question =
-    fieldset [ class "radio-buttons" ]
+    div [ class "radio-buttons" ]
         ((List.map (optionRadio question) question.options) ++ [ addOptionRadio question ])
 
 
 optionRadio : Question -> Option -> Html Msg
 optionRadio question option =
-    div [ class "field" ]
-        [ div [ class "ui radio checkbox" ]
-            [ input [ type_ "radio", name question.prompt, onClick NoOp ] []
-            , label []
-                [ div [ class "ui transparent input" ]
-                    [ h5 [] [ input [ value option.text, onInput (OptionEdited question option) ] [] ]
-                    ]
+    div [ class "field has-addons" ]
+        [ div [ class "control" ]
+            [ input
+                [ type_ "radio"
+                , name question.prompt
+                , onClick NoOp
                 ]
+                []
+            ]
+        , div [ class "control is-expanded" ]
+            [ input
+                [ class "input is-small is-borderless"
+                , value option.text
+                , onInput (OptionEdited question option)
+                ]
+                []
             ]
         ]
 
 
 addOptionRadio : Question -> Html Msg
 addOptionRadio question =
-    div [ class "field" ]
-        [ div [ class "ui radio checkbox" ]
-            [ input [ type_ "radio", name "Add option", onClick (OptionAdded question) ] []
-            , label []
-                [ div [ class "ui transparent input" ]
-                    [ input [ placeholder "Add option", onFocus (OptionAdded question) ] []
-                    ]
+    div [ class "field has-addons" ]
+        [ div [ class "control" ]
+            [ input
+                [ type_ "radio"
+                , name "Add option"
+                , onClick (OptionAdded question)
                 ]
+                []
+            ]
+        , div [ class "control is-expanded" ]
+            [ input
+                [ class "input is-small is-borderless"
+                , placeholder "Add option"
+                , onFocus (OptionAdded question)
+                ]
+                []
             ]
         ]
 

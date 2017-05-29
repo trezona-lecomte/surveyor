@@ -10,3 +10,6 @@ TAGS
 
 # Emacs files:
 \#*\#
+
+# SASS/CSS files:
+.sass-cache

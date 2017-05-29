@@ -9726,13 +9726,6 @@ var _user$project$Survey$update = F2(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{activeTab: _p0._0}));
-			case 'QuestionClicked':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							activeQuestionId: _elm_lang$core$Maybe$Just(_p0._0)
-						}));
 			case 'TitleEdited':
 				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
@@ -9743,6 +9736,31 @@ var _user$project$Survey$update = F2(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{description: _p0._0}));
+			case 'QuestionAdded':
+				var _p1 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
+				var newUuid = _p1._0;
+				var newSeed = _p1._1;
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							uuidSeed: newSeed,
+							questions: A2(
+								_elm_lang$core$Basics_ops['++'],
+								model.questions,
+								{
+									ctor: '::',
+									_0: A2(_user$project$Types$newQuestion, model.questions, newUuid),
+									_1: {ctor: '[]'}
+								})
+						}));
+			case 'QuestionClicked':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							activeQuestionId: _elm_lang$core$Maybe$Just(_p0._0)
+						}));
 			case 'PromptEdited':
 				return _user$project$DRY$noCmd(
 					_elm_lang$core$Native_Utils.update(
@@ -9772,24 +9790,6 @@ var _user$project$Survey$update = F2(
 								_elm_lang$core$List$map,
 								A3(_user$project$Survey$editOptionInQuestion, _p0._0, _p0._1, _p0._2),
 								model.questions)
-						}));
-			case 'QuestionAdded':
-				var _p1 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
-				var newUuid = _p1._0;
-				var newSeed = _p1._1;
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							uuidSeed: newSeed,
-							questions: A2(
-								_elm_lang$core$Basics_ops['++'],
-								model.questions,
-								{
-									ctor: '::',
-									_0: A2(_user$project$Types$newQuestion, model.questions, newUuid),
-									_1: {ctor: '[]'}
-								})
 						}));
 			default:
 				return _user$project$DRY$noCmd(model);
@@ -9833,25 +9833,6 @@ var _user$project$Survey$Model = F7(
 		return {title: a, description: b, tabs: c, activeTab: d, questions: e, activeQuestionId: f, uuidSeed: g};
 	});
 var _user$project$Survey$NoOp = {ctor: 'NoOp'};
-var _user$project$Survey$QuestionAdded = {ctor: 'QuestionAdded'};
-var _user$project$Survey$addQuestionButton = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('ui bottom attached button'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Events$onClick(_user$project$Survey$QuestionAdded),
-				_1: {ctor: '[]'}
-			}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('Add Question'),
-			_1: {ctor: '[]'}
-		});
-};
 var _user$project$Survey$OptionEdited = F3(
 	function (a, b, c) {
 		return {ctor: 'OptionEdited', _0: a, _1: b, _2: c};
@@ -9862,7 +9843,7 @@ var _user$project$Survey$optionRadio = F2(
 			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('field'),
+				_0: _elm_lang$html$Html_Attributes$class('field has-addons'),
 				_1: {ctor: '[]'}
 			},
 			{
@@ -9871,7 +9852,7 @@ var _user$project$Survey$optionRadio = F2(
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('ui radio checkbox'),
+						_0: _elm_lang$html$Html_Attributes$class('control'),
 						_1: {ctor: '[]'}
 					},
 					{
@@ -9892,50 +9873,40 @@ var _user$project$Survey$optionRadio = F2(
 								}
 							},
 							{ctor: '[]'}),
-						_1: {
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('control is-expanded'),
+							_1: {ctor: '[]'}
+						},
+						{
 							ctor: '::',
 							_0: A2(
-								_elm_lang$html$Html$label,
-								{ctor: '[]'},
+								_elm_lang$html$Html$input,
 								{
 									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$div,
-										{
+									_0: _elm_lang$html$Html_Attributes$class('input is-small is-borderless'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$value(option.text),
+										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$class('ui transparent input'),
+											_0: _elm_lang$html$Html_Events$onInput(
+												A2(_user$project$Survey$OptionEdited, question, option)),
 											_1: {ctor: '[]'}
-										},
-										{
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$h5,
-												{ctor: '[]'},
-												{
-													ctor: '::',
-													_0: A2(
-														_elm_lang$html$Html$input,
-														{
-															ctor: '::',
-															_0: _elm_lang$html$Html_Attributes$value(option.text),
-															_1: {
-																ctor: '::',
-																_0: _elm_lang$html$Html_Events$onInput(
-																	A2(_user$project$Survey$OptionEdited, question, option)),
-																_1: {ctor: '[]'}
-															}
-														},
-														{ctor: '[]'}),
-													_1: {ctor: '[]'}
-												}),
-											_1: {ctor: '[]'}
-										}),
-									_1: {ctor: '[]'}
-								}),
+										}
+									}
+								},
+								{ctor: '[]'}),
 							_1: {ctor: '[]'}
-						}
-					}),
-				_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
 			});
 	});
 var _user$project$Survey$OptionAdded = function (a) {
@@ -9946,7 +9917,7 @@ var _user$project$Survey$addOptionRadio = function (question) {
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('field'),
+			_0: _elm_lang$html$Html_Attributes$class('field has-addons'),
 			_1: {ctor: '[]'}
 		},
 		{
@@ -9955,7 +9926,7 @@ var _user$project$Survey$addOptionRadio = function (question) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('ui radio checkbox'),
+					_0: _elm_lang$html$Html_Attributes$class('control'),
 					_1: {ctor: '[]'}
 				},
 				{
@@ -9977,48 +9948,45 @@ var _user$project$Survey$addOptionRadio = function (question) {
 							}
 						},
 						{ctor: '[]'}),
-					_1: {
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('control is-expanded'),
+						_1: {ctor: '[]'}
+					},
+					{
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$label,
-							{ctor: '[]'},
+							_elm_lang$html$Html$input,
 							{
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$div,
-									{
+								_0: _elm_lang$html$Html_Attributes$class('input is-small is-borderless'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$placeholder('Add option'),
+									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$class('ui transparent input'),
+										_0: _elm_lang$html$Html_Events$onFocus(
+											_user$project$Survey$OptionAdded(question)),
 										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$input,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$placeholder('Add option'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onFocus(
-														_user$project$Survey$OptionAdded(question)),
-													_1: {ctor: '[]'}
-												}
-											},
-											{ctor: '[]'}),
-										_1: {ctor: '[]'}
-									}),
-								_1: {ctor: '[]'}
-							}),
+									}
+								}
+							},
+							{ctor: '[]'}),
 						_1: {ctor: '[]'}
-					}
-				}),
-			_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
 		});
 };
 var _user$project$Survey$multiChoiceOptions = function (question) {
 	return A2(
-		_elm_lang$html$Html$fieldset,
+		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
 			_0: _elm_lang$html$Html_Attributes$class('radio-buttons'),
@@ -10042,127 +10010,22 @@ var _user$project$Survey$PromptEdited = F2(
 	});
 var _user$project$Survey$questionPrompt = function (question) {
 	return A2(
-		_elm_lang$html$Html$h3,
-		{ctor: '[]'},
+		_elm_lang$html$Html$input,
 		{
 			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$input,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$value(question.prompt),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onInput(
-							_user$project$Survey$PromptEdited(question)),
-						_1: {ctor: '[]'}
-					}
-				},
-				{ctor: '[]'}),
-			_1: {ctor: '[]'}
-		});
-};
-var _user$project$Survey$DescriptionEdited = function (a) {
-	return {ctor: 'DescriptionEdited', _0: a};
-};
-var _user$project$Survey$TitleEdited = function (a) {
-	return {ctor: 'TitleEdited', _0: a};
-};
-var _user$project$Survey$titleAndDescription = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('ui segment'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('ui massive fluid input'),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$h1,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$input,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$id('title-input'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$value(model.title),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$placeholder('Untitled form'),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$autofocus(true),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$TitleEdited),
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									}
-								},
-								{ctor: '[]'}),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}),
+			_0: _elm_lang$html$Html_Attributes$class('input'),
 			_1: {
 				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('ui large fluid input'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$h2,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$input,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$id('description-input'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$value(model.description),
-											_1: {
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$placeholder('Form description'),
-												_1: {
-													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$DescriptionEdited),
-													_1: {ctor: '[]'}
-												}
-											}
-										}
-									},
-									{ctor: '[]'}),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
+				_0: _elm_lang$html$Html_Attributes$value(question.prompt),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onInput(
+						_user$project$Survey$PromptEdited(question)),
+					_1: {ctor: '[]'}
+				}
 			}
-		});
+		},
+		{ctor: '[]'});
 };
 var _user$project$Survey$QuestionClicked = function (a) {
 	return {ctor: 'QuestionClicked', _0: a};
@@ -10182,7 +10045,7 @@ var _user$project$Survey$editableQuestion = F3(
 			{
 				ctor: '::',
 				_0: _elm_lang$html$Html_Attributes$class(
-					A2(_elm_lang$core$Basics_ops['++'], 'ui segment question', activeClass)),
+					A2(_elm_lang$core$Basics_ops['++'], 'box', activeClass)),
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Events$onClick(
@@ -10196,7 +10059,7 @@ var _user$project$Survey$editableQuestion = F3(
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('ui two column grid'),
+						_0: _elm_lang$html$Html_Attributes$class('columns'),
 						_1: {ctor: '[]'}
 					},
 					{
@@ -10205,7 +10068,7 @@ var _user$project$Survey$editableQuestion = F3(
 							_elm_lang$html$Html$div,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('twelve wide column'),
+								_0: _elm_lang$html$Html_Attributes$class('column is-two-thirds'),
 								_1: {ctor: '[]'}
 							},
 							A2(
@@ -10222,7 +10085,7 @@ var _user$project$Survey$editableQuestion = F3(
 								_elm_lang$html$Html$div,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('four wide column'),
+									_0: _elm_lang$html$Html_Attributes$class('column is-one-third'),
 									_1: {ctor: '[]'}
 								},
 								{
@@ -10252,12 +10115,31 @@ var _user$project$Survey$viewQuestion = F2(
 		}();
 		return A3(_user$project$Survey$editableQuestion, model, question, options);
 	});
+var _user$project$Survey$QuestionAdded = {ctor: 'QuestionAdded'};
+var _user$project$Survey$addQuestionButton = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('ui bottom attached button'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onClick(_user$project$Survey$QuestionAdded),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Add Question'),
+			_1: {ctor: '[]'}
+		});
+};
 var _user$project$Survey$surveySection = function (model) {
 	return _elm_lang$core$Native_Utils.eq(model.activeTab, 'questions') ? A2(
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('ui form questions'),
+			_0: _elm_lang$html$Html_Attributes$class(''),
 			_1: {ctor: '[]'}
 		},
 		{
@@ -10266,7 +10148,7 @@ var _user$project$Survey$surveySection = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('grouped fields'),
+					_0: _elm_lang$html$Html_Attributes$class(''),
 					_1: {ctor: '[]'}
 				},
 				A2(
@@ -10294,29 +10176,103 @@ var _user$project$Survey$surveySection = function (model) {
 			_1: {ctor: '[]'}
 		});
 };
+var _user$project$Survey$DescriptionEdited = function (a) {
+	return {ctor: 'DescriptionEdited', _0: a};
+};
+var _user$project$Survey$TitleEdited = function (a) {
+	return {ctor: 'TitleEdited', _0: a};
+};
+var _user$project$Survey$titleAndDescription = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('section'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('input is-large'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$id('title-input'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$value(model.title),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$placeholder('Untitled form'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$autofocus(true),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$TitleEdited),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$input,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('input is-medium'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$id('description-input'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$value(model.description),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$placeholder('Form description'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$DescriptionEdited),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}
+					},
+					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			}
+		});
+};
 var _user$project$Survey$TabClicked = function (a) {
 	return {ctor: 'TabClicked', _0: a};
 };
 var _user$project$Survey$tabMenuItem = F2(
 	function (model, tab) {
-		var tabClass = _elm_lang$core$Native_Utils.eq(tab, model.activeTab) ? 'active item' : 'item';
 		return A2(
-			_elm_lang$html$Html$a,
+			_elm_lang$html$Html$li,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class(tabClass),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(
-						_user$project$Survey$TabClicked(tab)),
-					_1: {ctor: '[]'}
-				}
+				_0: _elm_lang$html$Html_Attributes$class(
+					_elm_lang$core$Native_Utils.eq(tab, model.activeTab) ? 'is-active' : ''),
+				_1: {ctor: '[]'}
 			},
 			{
 				ctor: '::',
 				_0: A2(
-					_elm_lang$html$Html$h3,
-					{ctor: '[]'},
+					_elm_lang$html$Html$a,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(
+							_user$project$Survey$TabClicked(tab)),
+						_1: {ctor: '[]'}
+					},
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html$text(tab),
@@ -10330,17 +10286,20 @@ var _user$project$Survey$tabMenu = function (model) {
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('ui large secondary pointing menu'),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$id('tab-menu'),
-				_1: {ctor: '[]'}
-			}
+			_0: _elm_lang$html$Html_Attributes$class('tabs is-centered is-large'),
+			_1: {ctor: '[]'}
 		},
-		A2(
-			_elm_lang$core$List$map,
-			_user$project$Survey$tabMenuItem(model),
-			model.tabs));
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$ul,
+				{ctor: '[]'},
+				A2(
+					_elm_lang$core$List$map,
+					_user$project$Survey$tabMenuItem(model),
+					model.tabs)),
+			_1: {ctor: '[]'}
+		});
 };
 var _user$project$Survey$view = function (model) {
 	return A2(
@@ -10356,7 +10315,7 @@ var _user$project$Survey$view = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('ui secondary pointing menu'),
+					_0: _elm_lang$html$Html_Attributes$class('nav'),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$html$Html_Attributes$id('main-menu'),
@@ -10370,23 +10329,30 @@ var _user$project$Survey$view = function (model) {
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('ui content container'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$id('main-container'),
-							_1: {ctor: '[]'}
-						}
+						_0: _elm_lang$html$Html_Attributes$class('section'),
+						_1: {ctor: '[]'}
 					},
 					{
 						ctor: '::',
-						_0: _user$project$Survey$tabMenu(model),
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('container'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _user$project$Survey$tabMenu(model),
+								_1: {ctor: '[]'}
+							}),
 						_1: {
 							ctor: '::',
 							_0: A2(
 								_elm_lang$html$Html$div,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('ui segments'),
+									_0: _elm_lang$html$Html_Attributes$class('container'),
 									_1: {ctor: '[]'}
 								},
 								{
