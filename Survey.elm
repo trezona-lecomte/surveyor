@@ -2,7 +2,7 @@ module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
 import DRY exposing (..)
 import Html exposing (Html, a, div, fieldset, h1, h2, h3, h4, h5, h6, i, input, label, li, option, select, span, text, textarea, ul)
-import Html.Attributes exposing (autofocus, class, id, name, placeholder, type_, value)
+import Html.Attributes exposing (autofocus, class, id, name, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput)
 import List
 import Random.Pcg as Pcg
@@ -214,6 +214,9 @@ viewQuestion model question =
     let
         options =
             case question.format of
+                OpenEnded ->
+                    [ textarea [ class "textarea" ] [] ]
+
                 MultiChoice ->
                     [ multiChoiceOptions question ]
 
@@ -266,16 +269,16 @@ questionFormatSelect question =
         [ div [ class "control" ]
             [ (span [ class "select" ]
                 [ select [ name (toString question.id), onInput (FormatSelected question) ]
-                    (List.map questionFormatOption questionFormats)
+                    (List.map (questionFormatOption question) questionFormats)
                 ]
               )
             ]
         ]
 
 
-questionFormatOption : String -> Html Msg
-questionFormatOption format =
-    option [ value format ] [ text format ]
+questionFormatOption : Question -> String -> Html Msg
+questionFormatOption question format =
+    option [ value format, selected (parseQuestionFormat format == question.format) ] [ text format ]
 
 
 multiChoiceOptions : Question -> Html Msg

@@ -27,11 +27,6 @@ type QuestionFormat
     | OrdinalScale
 
 
-questionFormats : List String
-questionFormats =
-    [ "Open ended", "Multi choice" ]
-
-
 type alias Option =
     { index : Int
     , text : String
@@ -65,6 +60,11 @@ newOption existingOptions =
             List.length existingOptions
     in
         { index = newIndex, text = "Option " ++ (toString (newIndex + 1)) }
+
+
+questionFormats : List String
+questionFormats =
+    [ "Open ended", "Multi choice" ]
 
 
 parseQuestionFormat : String -> QuestionFormat

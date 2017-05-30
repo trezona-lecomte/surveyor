@@ -9542,6 +9542,15 @@ var _user$project$DRY$noCmd = function (model) {
 		{ctor: '[]'});
 };
 
+var _user$project$Types$questionFormats = {
+	ctor: '::',
+	_0: 'Open ended',
+	_1: {
+		ctor: '::',
+		_0: 'Multi choice',
+		_1: {ctor: '[]'}
+	}
+};
 var _user$project$Types$newOption = function (existingOptions) {
 	var newIndex = _elm_lang$core$List$length(existingOptions);
 	return {
@@ -9551,15 +9560,6 @@ var _user$project$Types$newOption = function (existingOptions) {
 			'Option ',
 			_elm_lang$core$Basics$toString(newIndex + 1))
 	};
-};
-var _user$project$Types$questionFormats = {
-	ctor: '::',
-	_0: 'Open ended',
-	_1: {
-		ctor: '::',
-		_0: 'Multi choice',
-		_1: {ctor: '[]'}
-	}
 };
 var _user$project$Types$Question = F4(
 	function (a, b, c, d) {
@@ -9625,20 +9625,28 @@ var _user$project$Types$OpenAnswer = function (a) {
 var _user$project$Survey$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
-var _user$project$Survey$questionFormatOption = function (format) {
-	return A2(
-		_elm_lang$html$Html$option,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$value(format),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text(format),
-			_1: {ctor: '[]'}
-		});
-};
+var _user$project$Survey$questionFormatOption = F2(
+	function (question, format) {
+		return A2(
+			_elm_lang$html$Html$option,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$value(format),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$selected(
+						_elm_lang$core$Native_Utils.eq(
+							_user$project$Types$parseQuestionFormat(format),
+							question.format)),
+					_1: {ctor: '[]'}
+				}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(format),
+				_1: {ctor: '[]'}
+			});
+	});
 var _user$project$Survey$addOption = F2(
 	function (addedOnQuestion, question) {
 		return _elm_lang$core$Native_Utils.eq(question, addedOnQuestion) ? _elm_lang$core$Native_Utils.update(
@@ -10047,7 +10055,10 @@ var _user$project$Survey$questionFormatSelect = function (question) {
 										_1: {ctor: '[]'}
 									}
 								},
-								A2(_elm_lang$core$List$map, _user$project$Survey$questionFormatOption, _user$project$Types$questionFormats)),
+								A2(
+									_elm_lang$core$List$map,
+									_user$project$Survey$questionFormatOption(question),
+									_user$project$Types$questionFormats)),
 							_1: {ctor: '[]'}
 						}),
 					_1: {ctor: '[]'}
@@ -10131,14 +10142,28 @@ var _user$project$Survey$viewQuestion = F2(
 	function (model, question) {
 		var options = function () {
 			var _p4 = question.format;
-			if (_p4.ctor === 'MultiChoice') {
-				return {
-					ctor: '::',
-					_0: _user$project$Survey$multiChoiceOptions(question),
-					_1: {ctor: '[]'}
-				};
-			} else {
-				return {ctor: '[]'};
+			switch (_p4.ctor) {
+				case 'OpenEnded':
+					return {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$textarea,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('textarea'),
+								_1: {ctor: '[]'}
+							},
+							{ctor: '[]'}),
+						_1: {ctor: '[]'}
+					};
+				case 'MultiChoice':
+					return {
+						ctor: '::',
+						_0: _user$project$Survey$multiChoiceOptions(question),
+						_1: {ctor: '[]'}
+					};
+				default:
+					return {ctor: '[]'};
 			}
 		}();
 		return A3(_user$project$Survey$editableQuestion, model, question, options);
