@@ -1,7 +1,7 @@
 module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
 import DRY exposing (..)
-import Html exposing (Html, a, div, fieldset, h1, h2, h3, h4, h5, h6, i, input, label, li, option, select, span, text, textarea, ul)
+import Html exposing (..)
 import Html.Attributes exposing (autofocus, class, id, name, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput)
 import List
