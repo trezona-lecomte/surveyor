@@ -9594,6 +9594,21 @@ var _user$project$Types$newQuestion = F2(
 		};
 	});
 var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
+var _user$project$Types$parseQuestionFormat = function (format) {
+	var _p0 = format;
+	switch (_p0) {
+		case 'Open ended':
+			return _user$project$Types$OpenEnded;
+		case 'Multi choice':
+			return _user$project$Types$MultiChoice;
+		case 'Number range':
+			return _user$project$Types$NumberRange;
+		case 'Ordinal scale':
+			return _user$project$Types$OrdinalScale;
+		default:
+			return _user$project$Types$OpenEnded;
+	}
+};
 var _user$project$Types$OrdinalAnswer = function (a) {
 	return {ctor: 'OrdinalAnswer', _0: a};
 };
@@ -9612,74 +9627,15 @@ var _user$project$Survey$subscriptions = function (model) {
 };
 var _user$project$Survey$questionFormatOption = function (format) {
 	return A2(
-		_elm_lang$html$Html$div,
+		_elm_lang$html$Html$option,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('item'),
+			_0: _elm_lang$html$Html_Attributes$value(format),
 			_1: {ctor: '[]'}
 		},
 		{
 			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$i,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('folder icon'),
-					_1: {ctor: '[]'}
-				},
-				{ctor: '[]'}),
-			_1: {
-				ctor: '::',
-				_0: _elm_lang$html$Html$text(format),
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _user$project$Survey$questionFormatSelect = function (question) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('ui compact menu'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('ui simple dropdown item'),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text(
-						_elm_lang$core$Basics$toString(question.format)),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$i,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('dropdown icon'),
-								_1: {ctor: '[]'}
-							},
-							{ctor: '[]'}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('menu'),
-									_1: {ctor: '[]'}
-								},
-								A2(_elm_lang$core$List$map, _user$project$Survey$questionFormatOption, _user$project$Types$questionFormats)),
-							_1: {ctor: '[]'}
-						}
-					}
-				}),
+			_0: _elm_lang$html$Html$text(format),
 			_1: {ctor: '[]'}
 		});
 };
@@ -9716,6 +9672,14 @@ var _user$project$Survey$editPrompt = F3(
 		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
 			question,
 			{prompt: newPrompt}) : question;
+	});
+var _user$project$Survey$editFormat = F3(
+	function (editedQuestion, newFormat, question) {
+		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
+			question,
+			{
+				format: _user$project$Types$parseQuestionFormat(newFormat)
+			}) : question;
 	});
 var _user$project$Survey$update = F2(
 	function (msg, model) {
@@ -9760,6 +9724,16 @@ var _user$project$Survey$update = F2(
 						model,
 						{
 							activeQuestionId: _elm_lang$core$Maybe$Just(_p0._0)
+						}));
+			case 'FormatSelected':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A2(
+								_elm_lang$core$List$map,
+								A2(_user$project$Survey$editFormat, _p0._0, _p0._1),
+								model.questions)
 						}));
 			case 'PromptEdited':
 				return _user$project$DRY$noCmd(
@@ -9864,7 +9838,8 @@ var _user$project$Survey$optionRadio = F2(
 								_0: _elm_lang$html$Html_Attributes$type_('radio'),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$name(question.prompt),
+									_0: _elm_lang$html$Html_Attributes$name(
+										_elm_lang$core$Basics$toString(question.id)),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Events$onClick(_user$project$Survey$NoOp),
@@ -10027,6 +10002,59 @@ var _user$project$Survey$questionPrompt = function (question) {
 		},
 		{ctor: '[]'});
 };
+var _user$project$Survey$FormatSelected = F2(
+	function (a, b) {
+		return {ctor: 'FormatSelected', _0: a, _1: b};
+	});
+var _user$project$Survey$questionFormatSelect = function (question) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('field'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('control'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$span,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('select'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$select,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$name(
+										_elm_lang$core$Basics$toString(question.id)),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onInput(
+											_user$project$Survey$FormatSelected(question)),
+										_1: {ctor: '[]'}
+									}
+								},
+								A2(_elm_lang$core$List$map, _user$project$Survey$questionFormatOption, _user$project$Types$questionFormats)),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		});
+};
 var _user$project$Survey$QuestionClicked = function (a) {
 	return {ctor: 'QuestionClicked', _0: a};
 };
@@ -10137,33 +10165,18 @@ var _user$project$Survey$addQuestionButton = function (model) {
 var _user$project$Survey$surveySection = function (model) {
 	return _elm_lang$core$Native_Utils.eq(model.activeTab, 'questions') ? A2(
 		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class(''),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class(''),
-					_1: {ctor: '[]'}
-				},
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					A2(
-						_elm_lang$core$List$map,
-						_user$project$Survey$viewQuestion(model),
-						model.questions),
-					{
-						ctor: '::',
-						_0: _user$project$Survey$addQuestionButton(model),
-						_1: {ctor: '[]'}
-					})),
-			_1: {ctor: '[]'}
-		}) : A2(
+		{ctor: '[]'},
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			A2(
+				_elm_lang$core$List$map,
+				_user$project$Survey$viewQuestion(model),
+				model.questions),
+			{
+				ctor: '::',
+				_0: _user$project$Survey$addQuestionButton(model),
+				_1: {ctor: '[]'}
+			})) : A2(
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',

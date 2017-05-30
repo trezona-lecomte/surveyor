@@ -65,3 +65,22 @@ newOption existingOptions =
             List.length existingOptions
     in
         { index = newIndex, text = "Option " ++ (toString (newIndex + 1)) }
+
+
+parseQuestionFormat : String -> QuestionFormat
+parseQuestionFormat format =
+    case format of
+        "Open ended" ->
+            OpenEnded
+
+        "Multi choice" ->
+            MultiChoice
+
+        "Number range" ->
+            NumberRange
+
+        "Ordinal scale" ->
+            OrdinalScale
+
+        _ ->
+            OpenEnded

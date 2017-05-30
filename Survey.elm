@@ -1,7 +1,7 @@
 module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
 import DRY exposing (..)
-import Html exposing (Html, a, div, fieldset, h1, h2, h3, h4, h5, h6, i, input, label, li, option, select, text, textarea, ul)
+import Html exposing (Html, a, div, fieldset, h1, h2, h3, h4, h5, h6, i, input, label, li, option, select, span, text, textarea, ul)
 import Html.Attributes exposing (autofocus, class, id, name, placeholder, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput)
 import List
@@ -48,6 +48,7 @@ type Msg
     | DescriptionEdited String
     | QuestionAdded
     | QuestionClicked QuestionId
+    | FormatSelected Question String
     | PromptEdited Question String
     | OptionAdded Question
     | OptionEdited Question Option String
@@ -76,6 +77,9 @@ update msg model =
         QuestionClicked questionId ->
             noCmd { model | activeQuestionId = Just questionId }
 
+        FormatSelected question format ->
+            noCmd { model | questions = List.map (editFormat question format) model.questions }
+
         PromptEdited question prompt ->
             noCmd { model | questions = List.map (editPrompt question prompt) model.questions }
 
@@ -87,6 +91,14 @@ update msg model =
 
         NoOp ->
             noCmd model
+
+
+editFormat : Question -> String -> Question -> Question
+editFormat editedQuestion newFormat question =
+    if question == editedQuestion then
+        { question | format = parseQuestionFormat newFormat }
+    else
+        question
 
 
 editPrompt : Question -> String -> Question -> Question
@@ -188,12 +200,10 @@ titleAndDescription model =
 surveySection : Model -> Html Msg
 surveySection model =
     if model.activeTab == "questions" then
-        div [ class "" ]
-            [ div [ class "" ]
-                ((List.map (viewQuestion model) model.questions)
-                    ++ [ addQuestionButton model ]
-                )
-            ]
+        div []
+            ((List.map (viewQuestion model) model.questions)
+                ++ [ addQuestionButton model ]
+            )
     else
         div [ class "answers" ]
             [ text "No responses yet." ]
@@ -240,28 +250,6 @@ editableQuestion model question elements =
             ]
 
 
-questionFormatSelect : Question -> Html Msg
-questionFormatSelect question =
-    div [ class "ui compact menu" ]
-        [ div [ class "ui simple dropdown item" ]
-            [ text (toString question.format)
-            , i [ class "dropdown icon" ] []
-            , (div [ class "menu" ]
-                (List.map questionFormatOption questionFormats)
-              )
-            ]
-        ]
-
-
-questionFormatOption : String -> Html Msg
-questionFormatOption format =
-    div [ class "item" ]
-        [ i [ class "folder icon" ]
-            []
-        , (text format)
-        ]
-
-
 questionPrompt : Question -> Html Msg
 questionPrompt question =
     input
@@ -270,6 +258,24 @@ questionPrompt question =
         , onInput (PromptEdited question)
         ]
         []
+
+
+questionFormatSelect : Question -> Html Msg
+questionFormatSelect question =
+    div [ class "field" ]
+        [ div [ class "control" ]
+            [ (span [ class "select" ]
+                [ select [ name (toString question.id), onInput (FormatSelected question) ]
+                    (List.map questionFormatOption questionFormats)
+                ]
+              )
+            ]
+        ]
+
+
+questionFormatOption : String -> Html Msg
+questionFormatOption format =
+    option [ value format ] [ text format ]
 
 
 multiChoiceOptions : Question -> Html Msg
@@ -284,7 +290,7 @@ optionRadio question option =
         [ div [ class "control" ]
             [ input
                 [ type_ "radio"
-                , name question.prompt
+                , name (toString question.id)
                 , onClick NoOp
                 ]
                 []
