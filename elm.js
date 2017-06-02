@@ -9575,25 +9575,20 @@ var _user$project$Types$QuestionId = function (a) {
 var _user$project$Types$OrdinalScale = {ctor: 'OrdinalScale'};
 var _user$project$Types$NumberRange = {ctor: 'NumberRange'};
 var _user$project$Types$MultiChoice = {ctor: 'MultiChoice'};
+var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
 var _user$project$Types$newQuestion = F2(
 	function (existingQuestions, uuid) {
 		var newQuestionNumber = _elm_lang$core$List$length(existingQuestions) + 1;
 		return {
 			id: _user$project$Types$QuestionId(uuid),
-			format: _user$project$Types$MultiChoice,
+			format: _user$project$Types$OpenEnded,
 			prompt: A2(
 				_elm_lang$core$Basics_ops['++'],
 				'Untitled Question ',
 				_elm_lang$core$Basics$toString(newQuestionNumber)),
-			options: {
-				ctor: '::',
-				_0: _user$project$Types$newOption(
-					{ctor: '[]'}),
-				_1: {ctor: '[]'}
-			}
+			options: {ctor: '[]'}
 		};
 	});
-var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
 var _user$project$Types$parseQuestionFormat = function (format) {
 	var _p0 = format;
 	switch (_p0) {

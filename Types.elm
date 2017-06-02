@@ -47,9 +47,9 @@ newQuestion existingQuestions uuid =
             List.length existingQuestions + 1
     in
         { id = QuestionId uuid
-        , format = MultiChoice
+        , format = OpenEnded
         , prompt = "Untitled Question " ++ (toString newQuestionNumber)
-        , options = [ newOption [] ]
+        , options = []
         }
 
 
