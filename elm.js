@@ -9544,10 +9544,10 @@ var _user$project$DRY$noCmd = function (model) {
 
 var _user$project$Types$questionFormats = {
 	ctor: '::',
-	_0: 'Open ended',
+	_0: 'Multi choice',
 	_1: {
 		ctor: '::',
-		_0: 'Multi choice',
+		_0: 'Open ended',
 		_1: {ctor: '[]'}
 	}
 };

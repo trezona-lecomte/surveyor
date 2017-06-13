@@ -62,7 +62,7 @@ newOption questionId uuid =
 
 questionFormats : List String
 questionFormats =
-    [ "Open ended", "Multi choice" ]
+    [ "Multi choice", "Open ended" ]
 
 
 parseQuestionFormat : String -> QuestionFormat
