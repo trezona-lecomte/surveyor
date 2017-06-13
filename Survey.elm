@@ -2,7 +2,7 @@ port module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
 import DRY exposing (..)
 import Html exposing (..)
-import Html.Attributes exposing (autofocus, class, id, name, placeholder, selected, type_, value)
+import Html.Attributes exposing (autofocus, class, disabled, id, name, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput)
 import List
 import Random.Pcg as Pcg
@@ -363,6 +363,7 @@ addOptionRadio question =
                 [ type_ "radio"
                 , name "Add option"
                 , onClick (OptionAdded question)
+                , disabled True
                 ]
                 []
             ]

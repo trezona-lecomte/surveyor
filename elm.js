@@ -10009,7 +10009,11 @@ var _user$project$Survey$addOptionRadio = function (question) {
 									ctor: '::',
 									_0: _elm_lang$html$Html_Events$onClick(
 										_user$project$Survey$OptionAdded(question)),
-									_1: {ctor: '[]'}
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$disabled(true),
+										_1: {ctor: '[]'}
+									}
 								}
 							}
 						},
