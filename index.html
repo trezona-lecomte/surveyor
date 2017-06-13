@@ -14,6 +14,15 @@
     <title>Websocket Client</title>
   </head>
   <body>
-    <script>Elm.Main.fullscreen();</script>
+    <script>
+     var app = Elm.Main.fullscreen();
+
+     app.ports.selectOptionText.subscribe(function(optionSelectId) {
+       var optionInput = document.getElementById(optionSelectId);
+
+       optionInput.focus();
+       optionInput.select();
+     });
+    </script>
   </body>
 </html>

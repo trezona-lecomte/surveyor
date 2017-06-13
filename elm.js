@@ -9551,37 +9551,27 @@ var _user$project$Types$questionFormats = {
 		_1: {ctor: '[]'}
 	}
 };
-var _user$project$Types$newOption = function (existingOptions) {
-	var newIndex = _elm_lang$core$List$length(existingOptions);
-	return {
-		index: newIndex,
-		text: A2(
-			_elm_lang$core$Basics_ops['++'],
-			'Option ',
-			_elm_lang$core$Basics$toString(newIndex + 1))
-	};
-};
+var _user$project$Types$newOption = F2(
+	function (questionId, uuid) {
+		return {id: uuid, text: ''};
+	});
 var _user$project$Types$Question = F4(
 	function (a, b, c, d) {
 		return {id: a, format: b, prompt: c, options: d};
 	});
 var _user$project$Types$Option = F2(
 	function (a, b) {
-		return {index: a, text: b};
+		return {id: a, text: b};
 	});
-var _user$project$Types$QuestionId = function (a) {
-	return {ctor: 'QuestionId', _0: a};
-};
 var _user$project$Types$OrdinalScale = {ctor: 'OrdinalScale'};
 var _user$project$Types$NumberRange = {ctor: 'NumberRange'};
 var _user$project$Types$MultiChoice = {ctor: 'MultiChoice'};
-var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
 var _user$project$Types$newQuestion = F2(
 	function (existingQuestions, uuid) {
 		var newQuestionNumber = _elm_lang$core$List$length(existingQuestions) + 1;
 		return {
-			id: _user$project$Types$QuestionId(uuid),
-			format: _user$project$Types$OpenEnded,
+			id: uuid,
+			format: _user$project$Types$MultiChoice,
 			prompt: A2(
 				_elm_lang$core$Basics_ops['++'],
 				'Untitled Question ',
@@ -9589,6 +9579,7 @@ var _user$project$Types$newQuestion = F2(
 			options: {ctor: '[]'}
 		};
 	});
+var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
 var _user$project$Types$parseQuestionFormat = function (format) {
 	var _p0 = format;
 	switch (_p0) {
@@ -9617,9 +9608,6 @@ var _user$project$Types$OpenAnswer = function (a) {
 	return {ctor: 'OpenAnswer', _0: a};
 };
 
-var _user$project$Survey$subscriptions = function (model) {
-	return _elm_lang$core$Platform_Sub$none;
-};
 var _user$project$Survey$questionFormatOption = F2(
 	function (question, format) {
 		return A2(
@@ -9642,8 +9630,38 @@ var _user$project$Survey$questionFormatOption = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$Survey$addOption = F2(
-	function (addedOnQuestion, question) {
+var _user$project$Survey$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$none;
+};
+var _user$project$Survey$removeOption = F3(
+	function (removedFromQuestion, option, question) {
+		return _elm_lang$core$Native_Utils.eq(question, removedFromQuestion) ? _elm_lang$core$Native_Utils.update(
+			question,
+			{
+				options: A2(
+					_elm_lang$core$List$filter,
+					F2(
+						function (x, y) {
+							return !_elm_lang$core$Native_Utils.eq(x, y);
+						})(option),
+					question.options)
+			}) : question;
+	});
+var _user$project$Survey$editOption = F4(
+	function (editedQuestion, editedOption, newText, question) {
+		var editOptionInQuestion = function (option) {
+			return _elm_lang$core$Native_Utils.eq(option.id, editedOption.id) ? _elm_lang$core$Native_Utils.update(
+				option,
+				{text: newText}) : option;
+		};
+		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
+			question,
+			{
+				options: A2(_elm_lang$core$List$map, editOptionInQuestion, question.options)
+			}) : question;
+	});
+var _user$project$Survey$addOption = F3(
+	function (option, addedOnQuestion, question) {
 		return _elm_lang$core$Native_Utils.eq(question, addedOnQuestion) ? _elm_lang$core$Native_Utils.update(
 			question,
 			{
@@ -9652,22 +9670,9 @@ var _user$project$Survey$addOption = F2(
 					question.options,
 					{
 						ctor: '::',
-						_0: _user$project$Types$newOption(question.options),
+						_0: option,
 						_1: {ctor: '[]'}
 					})
-			}) : question;
-	});
-var _user$project$Survey$editOptionInQuestion = F4(
-	function (editedQuestion, editedOption, newText, question) {
-		var editOption = function (option) {
-			return _elm_lang$core$Native_Utils.eq(option.index, editedOption.index) ? _elm_lang$core$Native_Utils.update(
-				option,
-				{text: newText}) : option;
-		};
-		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
-			question,
-			{
-				options: A2(_elm_lang$core$List$map, editOption, question.options)
 			}) : question;
 	});
 var _user$project$Survey$editPrompt = F3(
@@ -9684,101 +9689,13 @@ var _user$project$Survey$editFormat = F3(
 				format: _user$project$Types$parseQuestionFormat(newFormat)
 			}) : question;
 	});
-var _user$project$Survey$update = F2(
-	function (msg, model) {
-		var _p0 = msg;
-		switch (_p0.ctor) {
-			case 'TabClicked':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{activeTab: _p0._0}));
-			case 'TitleEdited':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{title: _p0._0}));
-			case 'DescriptionEdited':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{description: _p0._0}));
-			case 'QuestionAdded':
-				var _p1 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
-				var newUuid = _p1._0;
-				var newSeed = _p1._1;
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							uuidSeed: newSeed,
-							questions: A2(
-								_elm_lang$core$Basics_ops['++'],
-								model.questions,
-								{
-									ctor: '::',
-									_0: A2(_user$project$Types$newQuestion, model.questions, newUuid),
-									_1: {ctor: '[]'}
-								})
-						}));
-			case 'QuestionClicked':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							activeQuestionId: _elm_lang$core$Maybe$Just(_p0._0)
-						}));
-			case 'FormatSelected':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								A2(_user$project$Survey$editFormat, _p0._0, _p0._1),
-								model.questions)
-						}));
-			case 'PromptEdited':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								A2(_user$project$Survey$editPrompt, _p0._0, _p0._1),
-								model.questions)
-						}));
-			case 'OptionAdded':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								_user$project$Survey$addOption(_p0._0),
-								model.questions)
-						}));
-			case 'OptionEdited':
-				return _user$project$DRY$noCmd(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								A3(_user$project$Survey$editOptionInQuestion, _p0._0, _p0._1, _p0._2),
-								model.questions)
-						}));
-			default:
-				return _user$project$DRY$noCmd(model);
-		}
-	});
 var _user$project$Survey$init = function () {
-	var _p2 = A2(
+	var _p0 = A2(
 		_mgold$elm_random_pcg$Random_Pcg$step,
 		_danyx23$elm_uuid$Uuid$uuidGenerator,
 		_mgold$elm_random_pcg$Random_Pcg$initialSeed(291892861));
-	var uuid = _p2._0;
-	var seed = _p2._1;
+	var uuid = _p0._0;
+	var seed = _p0._1;
 	return _user$project$DRY$noCmd(
 		{
 			title: '',
@@ -9805,16 +9722,142 @@ var _user$project$Survey$init = function () {
 			uuidSeed: seed
 		});
 }();
+var _user$project$Survey$selectOptionText = _elm_lang$core$Native_Platform.outgoingPort(
+	'selectOptionText',
+	function (v) {
+		return v;
+	});
+var _user$project$Survey$update = F2(
+	function (msg, model) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
+			case 'TabClicked':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{activeTab: _p1._0}));
+			case 'TitleEdited':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{title: _p1._0}));
+			case 'DescriptionEdited':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{description: _p1._0}));
+			case 'QuestionAdded':
+				var _p2 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
+				var newUuid = _p2._0;
+				var newSeed = _p2._1;
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							uuidSeed: newSeed,
+							questions: A2(
+								_elm_lang$core$Basics_ops['++'],
+								model.questions,
+								{
+									ctor: '::',
+									_0: A2(_user$project$Types$newQuestion, model.questions, newUuid),
+									_1: {ctor: '[]'}
+								})
+						}));
+			case 'QuestionClicked':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							activeQuestionId: _elm_lang$core$Maybe$Just(_p1._0)
+						}));
+			case 'FormatSelected':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A2(
+								_elm_lang$core$List$map,
+								A2(_user$project$Survey$editFormat, _p1._0, _p1._1),
+								model.questions)
+						}));
+			case 'PromptEdited':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A2(
+								_elm_lang$core$List$map,
+								A2(_user$project$Survey$editPrompt, _p1._0, _p1._1),
+								model.questions)
+						}));
+			case 'OptionAdded':
+				var _p4 = _p1._0;
+				var _p3 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
+				var newUuid = _p3._0;
+				var newSeed = _p3._1;
+				var option = A2(_user$project$Types$newOption, _p4.id, newUuid);
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							uuidSeed: newSeed,
+							questions: A2(
+								_elm_lang$core$List$map,
+								A2(_user$project$Survey$addOption, option, _p4),
+								model.questions)
+						}));
+			case 'OptionEdited':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A2(
+								_elm_lang$core$List$map,
+								A3(_user$project$Survey$editOption, _p1._0, _p1._1, _p1._2),
+								model.questions)
+						}));
+			case 'OptionRemoved':
+				return _user$project$DRY$noCmd(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A2(
+								_elm_lang$core$List$map,
+								A2(_user$project$Survey$removeOption, _p1._0, _p1._1),
+								model.questions)
+						}));
+			case 'SelectOptionText':
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					model,
+					{
+						ctor: '::',
+						_0: _user$project$Survey$selectOptionText(
+							_danyx23$elm_uuid$Uuid$toString(_p1._0.id)),
+						_1: {ctor: '[]'}
+					});
+			default:
+				return _user$project$DRY$noCmd(model);
+		}
+	});
 var _user$project$Survey$Model = F7(
 	function (a, b, c, d, e, f, g) {
 		return {title: a, description: b, tabs: c, activeTab: d, questions: e, activeQuestionId: f, uuidSeed: g};
 	});
 var _user$project$Survey$NoOp = {ctor: 'NoOp'};
+var _user$project$Survey$SelectOptionText = function (a) {
+	return {ctor: 'SelectOptionText', _0: a};
+};
+var _user$project$Survey$OptionRemoved = F2(
+	function (a, b) {
+		return {ctor: 'OptionRemoved', _0: a, _1: b};
+	});
 var _user$project$Survey$OptionEdited = F3(
 	function (a, b, c) {
 		return {ctor: 'OptionEdited', _0: a, _1: b, _2: c};
 	});
-var _user$project$Survey$optionRadio = F2(
+var _user$project$Survey$viewOption = F2(
 	function (question, option) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -9868,22 +9911,67 @@ var _user$project$Survey$optionRadio = F2(
 								_elm_lang$html$Html$input,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('input is-small is-borderless'),
+									_0: _elm_lang$html$Html_Attributes$id(
+										_danyx23$elm_uuid$Uuid$toString(option.id)),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$value(option.text),
+										_0: _elm_lang$html$Html_Attributes$class('input is-small is-borderless'),
 										_1: {
 											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onInput(
-												A2(_user$project$Survey$OptionEdited, question, option)),
-											_1: {ctor: '[]'}
+											_0: _elm_lang$html$Html_Attributes$value(option.text),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$placeholder('Option ...'),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onInput(
+														A2(_user$project$Survey$OptionEdited, question, option)),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onFocus(
+															_user$project$Survey$SelectOptionText(option)),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
 										}
 									}
 								},
 								{ctor: '[]'}),
 							_1: {ctor: '[]'}
 						}),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('control'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$a,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('button is-danger is-small'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(
+												A2(_user$project$Survey$OptionRemoved, question, option)),
+											_1: {ctor: '[]'}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('x'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
 				}
 			});
 	});
@@ -9967,14 +10055,14 @@ var _user$project$Survey$multiChoiceOptions = function (question) {
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('radio-buttons'),
+			_0: _elm_lang$html$Html_Attributes$class('radio-buttons is-slightly-padded'),
 			_1: {ctor: '[]'}
 		},
 		A2(
 			_elm_lang$core$Basics_ops['++'],
 			A2(
 				_elm_lang$core$List$map,
-				_user$project$Survey$optionRadio(question),
+				_user$project$Survey$viewOption(question),
 				question.options),
 			{
 				ctor: '::',
@@ -10067,9 +10155,9 @@ var _user$project$Survey$QuestionClicked = function (a) {
 var _user$project$Survey$editableQuestion = F3(
 	function (model, question, elements) {
 		var activeClass = function () {
-			var _p3 = model.activeQuestionId;
-			if (_p3.ctor === 'Just') {
-				return _elm_lang$core$Native_Utils.eq(question.id, _p3._0) ? ' raised red' : '';
+			var _p5 = model.activeQuestionId;
+			if (_p5.ctor === 'Just') {
+				return _elm_lang$core$Native_Utils.eq(question.id, _p5._0) ? ' raised red' : '';
 			} else {
 				return '';
 			}
@@ -10136,8 +10224,8 @@ var _user$project$Survey$editableQuestion = F3(
 var _user$project$Survey$viewQuestion = F2(
 	function (model, question) {
 		var options = function () {
-			var _p4 = question.format;
-			switch (_p4.ctor) {
+			var _p6 = question.format;
+			switch (_p6.ctor) {
 				case 'OpenEnded':
 					return {
 						ctor: '::',
@@ -10169,7 +10257,7 @@ var _user$project$Survey$addQuestionButton = function (model) {
 		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('ui bottom attached button'),
+			_0: _elm_lang$html$Html_Attributes$class('ui bottom attached button is-primary'),
 			_1: {
 				ctor: '::',
 				_0: _elm_lang$html$Html_Events$onClick(_user$project$Survey$QuestionAdded),

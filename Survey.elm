@@ -1,4 +1,4 @@
-module Survey exposing (Model, Msg, init, update, view, subscriptions)
+port module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
 import DRY exposing (..)
 import Html exposing (..)
@@ -52,6 +52,8 @@ type Msg
     | PromptEdited Question String
     | OptionAdded Question
     | OptionEdited Question Option String
+    | OptionRemoved Question Option
+    | SelectOptionText Option
     | NoOp
 
 
@@ -84,10 +86,23 @@ update msg model =
             noCmd { model | questions = List.map (editPrompt question prompt) model.questions }
 
         OptionAdded question ->
-            noCmd { model | questions = List.map (addOption question) model.questions }
+            let
+                ( newUuid, newSeed ) =
+                    Pcg.step Uuid.uuidGenerator model.uuidSeed
+
+                option =
+                    newOption question.id newUuid
+            in
+                noCmd { model | uuidSeed = newSeed, questions = List.map (addOption option question) model.questions }
 
         OptionEdited question option newText ->
-            noCmd { model | questions = List.map (editOptionInQuestion question option newText) model.questions }
+            noCmd { model | questions = List.map (editOption question option newText) model.questions }
+
+        OptionRemoved question option ->
+            noCmd { model | questions = List.map (removeOption question option) model.questions }
+
+        SelectOptionText option ->
+            model ! [ selectOptionText (Uuid.toString option.id) ]
 
         NoOp ->
             noCmd model
@@ -109,27 +124,43 @@ editPrompt editedQuestion newPrompt question =
         question
 
 
-editOptionInQuestion : Question -> Option -> String -> Question -> Question
-editOptionInQuestion editedQuestion editedOption newText question =
+addOption : Option -> Question -> Question -> Question
+addOption option addedOnQuestion question =
+    if question == addedOnQuestion then
+        { question | options = question.options ++ [ option ] }
+    else
+        question
+
+
+editOption : Question -> Option -> String -> Question -> Question
+editOption editedQuestion editedOption newText question =
     let
-        editOption option =
-            if option.index == editedOption.index then
+        editOptionInQuestion option =
+            if option.id == editedOption.id then
                 { option | text = newText }
             else
                 option
     in
         if question == editedQuestion then
-            { question | options = List.map editOption question.options }
+            { question | options = List.map editOptionInQuestion question.options }
         else
             question
 
 
-addOption : Question -> Question -> Question
-addOption addedOnQuestion question =
-    if question == addedOnQuestion then
-        { question | options = question.options ++ [ newOption question.options ] }
+removeOption : Question -> Option -> Question -> Question
+removeOption removedFromQuestion option question =
+    if question == removedFromQuestion then
+        { question | options = List.filter ((/=) option) question.options }
     else
         question
+
+
+port selectOptionText : String -> Cmd msg
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 
@@ -278,17 +309,22 @@ questionFormatSelect question =
 
 questionFormatOption : Question -> String -> Html Msg
 questionFormatOption question format =
-    option [ value format, selected (parseQuestionFormat format == question.format) ] [ text format ]
+    option
+        [ value format
+        , selected (parseQuestionFormat format == question.format)
+        ]
+        [ text format ]
 
 
 multiChoiceOptions : Question -> Html Msg
 multiChoiceOptions question =
-    div [ class "radio-buttons" ]
-        ((List.map (optionRadio question) question.options) ++ [ addOptionRadio question ])
+    div
+        [ class "radio-buttons is-slightly-padded" ]
+        ((List.map (viewOption question) question.options) ++ [ addOptionRadio question ])
 
 
-optionRadio : Question -> Option -> Html Msg
-optionRadio question option =
+viewOption : Question -> Option -> Html Msg
+viewOption question option =
     div [ class "field has-addons" ]
         [ div [ class "control" ]
             [ input
@@ -300,11 +336,21 @@ optionRadio question option =
             ]
         , div [ class "control is-expanded" ]
             [ input
-                [ class "input is-small is-borderless"
+                [ id (Uuid.toString option.id)
+                , class "input is-small is-borderless"
                 , value option.text
+                , placeholder "Option ..."
                 , onInput (OptionEdited question option)
+                , onFocus (SelectOptionText option)
                 ]
                 []
+            ]
+        , div [ class "control" ]
+            [ a
+                [ class "button is-danger is-small"
+                , onClick (OptionRemoved question option)
+                ]
+                [ text "x" ]
             ]
         ]
 
@@ -333,14 +379,5 @@ addOptionRadio question =
 
 addQuestionButton : Model -> Html Msg
 addQuestionButton model =
-    div [ class "ui bottom attached button", onClick QuestionAdded ]
+    div [ class "ui bottom attached button is-primary", onClick QuestionAdded ]
         [ text "Add Question" ]
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none

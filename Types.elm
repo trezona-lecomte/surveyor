@@ -8,8 +8,8 @@ type alias Tab =
     String
 
 
-type QuestionId
-    = QuestionId Uuid
+type alias QuestionId =
+    Uuid
 
 
 type alias Question =
@@ -28,7 +28,7 @@ type QuestionFormat
 
 
 type alias Option =
-    { index : Int
+    { id : Uuid
     , text : String
     }
 
@@ -46,20 +46,18 @@ newQuestion existingQuestions uuid =
         newQuestionNumber =
             List.length existingQuestions + 1
     in
-        { id = QuestionId uuid
-        , format = OpenEnded
+        { id = uuid
+        , format = MultiChoice
         , prompt = "Untitled Question " ++ (toString newQuestionNumber)
         , options = []
         }
 
 
-newOption : List Option -> Option
-newOption existingOptions =
-    let
-        newIndex =
-            List.length existingOptions
-    in
-        { index = newIndex, text = "Option " ++ (toString (newIndex + 1)) }
+newOption : QuestionId -> Uuid -> Option
+newOption questionId uuid =
+    { id = uuid
+    , text = ""
+    }
 
 
 questionFormats : List String
