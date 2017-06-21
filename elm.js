@@ -10399,12 +10399,12 @@ var _user$project$Survey$TabClicked = function (a) {
 };
 var _user$project$Survey$tabMenuItem = F2(
 	function (model, tab) {
+		var activeClass = _elm_lang$core$Native_Utils.eq(tab, model.activeTab) ? 'is-active' : '';
 		return A2(
 			_elm_lang$html$Html$li,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class(
-					_elm_lang$core$Native_Utils.eq(tab, model.activeTab) ? 'is-active' : ''),
+				_0: _elm_lang$html$Html_Attributes$class(activeClass),
 				_1: {ctor: '[]'}
 			},
 			{

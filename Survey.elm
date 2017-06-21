@@ -192,17 +192,18 @@ tabMenu model =
 
 tabMenuItem : Model -> Tab -> Html Msg
 tabMenuItem model tab =
-    li
-        [ class
-            (if tab == model.activeTab then
+    let
+        activeClass =
+            if tab == model.activeTab then
                 "is-active"
-             else
+            else
                 ""
-            )
-        ]
-        [ a [ onClick (TabClicked tab) ]
-            [ text tab ]
-        ]
+    in
+        li
+            [ class activeClass ]
+            [ a [ onClick (TabClicked tab) ]
+                [ text tab ]
+            ]
 
 
 titleAndDescription : Model -> Html Msg
