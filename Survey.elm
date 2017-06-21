@@ -1,6 +1,5 @@
 port module Survey exposing (Model, Msg, init, update, view, subscriptions)
 
-import DRY exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (autofocus, class, disabled, id, name, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput)
@@ -27,15 +26,16 @@ init =
         ( uuid, seed ) =
             Pcg.step Uuid.uuidGenerator (Pcg.initialSeed 291892861)
     in
-        noCmd
-            { title = ""
-            , description = ""
-            , tabs = [ "questions", "answers" ]
-            , activeTab = "questions"
-            , questions = [ newQuestion [] uuid ]
-            , activeQuestionId = Nothing
-            , uuidSeed = seed
-            }
+        ( { title = ""
+          , description = ""
+          , tabs = [ "questions", "answers" ]
+          , activeTab = "questions"
+          , questions = [ newQuestion [] uuid ]
+          , activeQuestionId = Nothing
+          , uuidSeed = seed
+          }
+        , Cmd.none
+        )
 
 
 
@@ -61,29 +61,29 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TabClicked tab ->
-            noCmd { model | activeTab = tab }
+            { model | activeTab = tab } ! []
 
         TitleEdited title ->
-            noCmd { model | title = title }
+            { model | title = title } ! []
 
         DescriptionEdited description ->
-            noCmd { model | description = description }
+            { model | description = description } ! []
 
         QuestionAdded ->
             let
                 ( newUuid, newSeed ) =
                     Pcg.step Uuid.uuidGenerator model.uuidSeed
             in
-                noCmd { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] }
+                { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] } ! []
 
         QuestionClicked questionId ->
-            noCmd { model | activeQuestionId = Just questionId }
+            { model | activeQuestionId = Just questionId } ! []
 
         FormatSelected question format ->
-            noCmd { model | questions = List.map (editFormat question format) model.questions }
+            { model | questions = List.map (editFormat question format) model.questions } ! []
 
         PromptEdited question prompt ->
-            noCmd { model | questions = List.map (editPrompt question prompt) model.questions }
+            { model | questions = List.map (editPrompt question prompt) model.questions } ! []
 
         OptionAdded question ->
             let
@@ -93,19 +93,19 @@ update msg model =
                 option =
                     newOption question.id newUuid
             in
-                noCmd { model | uuidSeed = newSeed, questions = List.map (addOption option question) model.questions }
+                { model | uuidSeed = newSeed, questions = List.map (addOption option question) model.questions } ! []
 
         OptionEdited question option newText ->
-            noCmd { model | questions = List.map (editOption question option newText) model.questions }
+            { model | questions = List.map (editOption question option newText) model.questions } ! []
 
         OptionRemoved question option ->
-            noCmd { model | questions = List.map (removeOption question option) model.questions }
+            { model | questions = List.map (removeOption question option) model.questions } ! []
 
         SelectOptionText option ->
             model ! [ selectOptionText (Uuid.toString option.id) ]
 
         NoOp ->
-            noCmd model
+            model ! []
 
 
 editFormat : Question -> String -> Question -> Question
