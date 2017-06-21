@@ -298,11 +298,10 @@ questionFormatSelect : Question -> Html Msg
 questionFormatSelect question =
     div [ class "field" ]
         [ div [ class "control" ]
-            [ (span [ class "select" ]
+            [ span [ class "select" ]
                 [ select [ name (toString question.id), onInput (FormatSelected question) ]
                     (List.map (questionFormatOption question) questionFormats)
                 ]
-              )
             ]
         ]
 
@@ -318,8 +317,7 @@ questionFormatOption question format =
 
 multiChoiceOptions : Question -> Html Msg
 multiChoiceOptions question =
-    div
-        [ class "radio-buttons is-slightly-padded" ]
+    div [ class "radio-buttons is-slightly-padded" ]
         ((List.map (viewOption question) question.options) ++ [ addOptionRadio question ])
 
 
@@ -380,5 +378,8 @@ addOptionRadio question =
 
 addQuestionButton : Model -> Html Msg
 addQuestionButton model =
-    div [ class "ui bottom attached button is-primary", onClick QuestionAdded ]
+    div
+        [ class "ui bottom attached button is-primary"
+        , onClick QuestionAdded
+        ]
         [ text "Add Question" ]
