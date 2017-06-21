@@ -2,15 +2,15 @@ name:                server
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/server#readme
-license:             BSD3
-license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
+homepage:            https://github.com/trezona-lecomte/surveyor
+license:             MIT
+license-file:        ../LICENSE
+author:              Kieran Trezona-le Comte
+maintainer:          trezona.lecomte@gmail.com
+copyright:           2017 Powershop NZ Ltd.
 category:            Web
 build-type:          Simple
-extra-source-files:  README.md
+extra-source-files:  ../README.md
 cabal-version:       >=1.10
 
 library
@@ -38,4 +38,4 @@ test-suite server-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/server
+  location: https://github.com/trezona-lecomte/surveyor

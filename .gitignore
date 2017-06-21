@@ -13,3 +13,6 @@ TAGS
 
 # SASS/CSS files:
 .sass-cache
+
+# Haskell files
+.stack-work
