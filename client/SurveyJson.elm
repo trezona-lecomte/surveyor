@@ -3,7 +3,7 @@ module SurveyJson exposing (encodeModel, decodeSurvey)
 import Json.Decode as Decode exposing (..)
 import Json.Encode as Encode exposing (..)
 import Types exposing (..)
-import Uuid
+import Uuid exposing (Uuid)
 
 
 -- decodeString : Decoder a -> String -> Result String a
@@ -16,6 +16,7 @@ decodeSurvey =
     decodeString surveyDecoder
 
 
+surveyDecoder : Decoder Survey
 surveyDecoder =
     map3 Survey
         (field "title" Decode.string)
@@ -23,6 +24,7 @@ surveyDecoder =
         (field "questions" (Decode.list questionDecoder))
 
 
+questionDecoder : Decoder Question
 questionDecoder =
     map4 Question
         (field "id" uuidDecoder)
@@ -31,20 +33,24 @@ questionDecoder =
         (field "options" (Decode.list optionDecoder))
 
 
+optionDecoder : Decoder Option
 optionDecoder =
     map2 Option
         (field "id" uuidDecoder)
         (field "text" Decode.string)
 
 
+uuidDecoder : Decoder (Maybe Uuid)
 uuidDecoder =
     Decode.string |> andThen uuidFromString
 
 
+questionFormatDecoder : Decoder QuestionFormat
 questionFormatDecoder =
     Decode.string |> andThen questionFormatFromString
 
 
+uuidFromString : String -> Decoder (Maybe Uuid)
 uuidFromString uuid =
     case Uuid.fromString uuid of
         Just id ->
@@ -54,6 +60,7 @@ uuidFromString uuid =
             Decode.fail uuid
 
 
+questionFormatFromString : String -> Decoder QuestionFormat
 questionFormatFromString format =
     case format of
         "OpenEnded" ->
@@ -80,6 +87,7 @@ questionFormatFromString format =
 -- pointDecoder = Json.Decode.map2 Point (Json.Decode.field "x" Json.Decode.int) (Json.Decode.field "y" Json.Decode.int)
 
 
+modelEncoder : Model -> Decode.Value
 modelEncoder model =
     Encode.object
         [ ( "title", Encode.string model.title )
