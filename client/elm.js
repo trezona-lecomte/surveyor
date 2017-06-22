@@ -10156,7 +10156,10 @@ var _user$project$Types$initialModel = function (startTime) {
 	var uuid = _p1._0;
 	var seed = _p1._1;
 	return {
-		userName: 'foo',
+		userName: A2(
+			_elm_lang$core$Basics_ops['++'],
+			'user-',
+			_elm_lang$core$Basics$toString(startTime)),
 		title: '',
 		description: '',
 		tabs: {

@@ -76,7 +76,7 @@ initialModel startTime =
         ( uuid, seed ) =
             Pcg.step Uuid.uuidGenerator (Pcg.initialSeed startTime)
     in
-        { userName = ""
+        { userName = "user-" ++ (toString startTime)
         , title = ""
         , description = ""
         , tabs = [ "questions", "answers" ]
