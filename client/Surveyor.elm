@@ -11,9 +11,13 @@ import Uuid
 import WebSocket
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( initialModel, register initialModel )
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    let
+        model =
+            initialModel flags.startTime
+    in
+        ( model, register model )
 
 
 

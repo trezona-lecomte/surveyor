@@ -10117,6 +10117,9 @@ var _user$project$Types$Model = function (a) {
 		};
 	};
 };
+var _user$project$Types$Flags = function (a) {
+	return {startTime: a};
+};
 var _user$project$Types$Survey = F3(
 	function (a, b, c) {
 		return {title: a, description: b, questions: c};
@@ -10145,11 +10148,11 @@ var _user$project$Types$newQuestion = F2(
 			options: {ctor: '[]'}
 		};
 	});
-var _user$project$Types$initialModel = function () {
+var _user$project$Types$initialModel = function (startTime) {
 	var _p1 = A2(
 		_mgold$elm_random_pcg$Random_Pcg$step,
 		_danyx23$elm_uuid$Uuid$uuidGenerator,
-		_mgold$elm_random_pcg$Random_Pcg$initialSeed(291892861));
+		_mgold$elm_random_pcg$Random_Pcg$initialSeed(startTime));
 	var uuid = _p1._0;
 	var seed = _p1._1;
 	return {
@@ -10179,7 +10182,7 @@ var _user$project$Types$initialModel = function () {
 		serverSocketAddress: '0.0.0.0:8000',
 		serverMessages: {ctor: '[]'}
 	};
-}();
+};
 var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
 var _user$project$Types$parseQuestionFormat = function (format) {
 	var _p2 = format;
@@ -10695,10 +10698,13 @@ var _user$project$Surveyor$register = function (model) {
 		A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
 		msg);
 };
-var _user$project$Surveyor$init = {
-	ctor: '_Tuple2',
-	_0: _user$project$Types$initialModel,
-	_1: _user$project$Surveyor$register(_user$project$Types$initialModel)
+var _user$project$Surveyor$init = function (flags) {
+	var model = _user$project$Types$initialModel(flags.startTime);
+	return {
+		ctor: '_Tuple2',
+		_0: model,
+		_1: _user$project$Surveyor$register(model)
+	};
 };
 var _user$project$Surveyor$selectOptionText = _elm_lang$core$Native_Platform.outgoingPort(
 	'selectOptionText',
@@ -11537,8 +11543,15 @@ var _user$project$Surveyor$view = function (model) {
 		});
 };
 
-var _user$project$Main$main = _elm_lang$html$Html$program(
-	{init: _user$project$Surveyor$init, view: _user$project$Surveyor$view, update: _user$project$Surveyor$update, subscriptions: _user$project$Surveyor$subscriptions})();
+var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
+	{init: _user$project$Surveyor$init, view: _user$project$Surveyor$view, update: _user$project$Surveyor$update, subscriptions: _user$project$Surveyor$subscriptions})(
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (startTime) {
+			return _elm_lang$core$Json_Decode$succeed(
+				{startTime: startTime});
+		},
+		A2(_elm_lang$core$Json_Decode$field, 'startTime', _elm_lang$core$Json_Decode$int)));
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};

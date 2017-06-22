@@ -2,12 +2,12 @@ module Main exposing (..)
 
 import Html exposing (program)
 import Surveyor exposing (Msg, init, view, update, subscriptions)
-import Types exposing (Model)
+import Types exposing (Flags, Model)
 
 
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-    Html.program
+    Html.programWithFlags
         { init = init
         , view = view
         , update = update

@@ -19,6 +19,10 @@ type alias Model =
     }
 
 
+type alias Flags =
+    { startTime : Int }
+
+
 type alias Survey =
     { title : String
     , description : String
@@ -66,11 +70,11 @@ type alias Tab =
     String
 
 
-initialModel : Model
-initialModel =
+initialModel : Int -> Model
+initialModel startTime =
     let
         ( uuid, seed ) =
-            Pcg.step Uuid.uuidGenerator (Pcg.initialSeed 291892861)
+            Pcg.step Uuid.uuidGenerator (Pcg.initialSeed startTime)
     in
         { userName = "foo"
         , title = ""

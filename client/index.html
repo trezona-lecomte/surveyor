@@ -21,7 +21,9 @@
   </head>
   <body>
     <script>
-     var app = Elm.Main.fullscreen();
+     var app = Elm.Main.fullscreen({
+       startTime: Date.now()
+     });
 
      app.ports.selectOptionText.subscribe(function(optionSelectId) {
        var optionInput = document.getElementById(optionSelectId);
