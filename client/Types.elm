@@ -34,8 +34,10 @@ type alias Question =
     }
 
 
-type alias QuestionId =
-    Uuid
+type alias Option =
+    { id : Maybe OptionId
+    , text : String
+    }
 
 
 type QuestionFormat
@@ -45,16 +47,6 @@ type QuestionFormat
     | OrdinalScale
 
 
-type alias Option =
-    { id : Maybe OptionId
-    , text : String
-    }
-
-
-type alias OptionId =
-    Uuid
-
-
 type Answer
     = OpenAnswer String
     | MultiAnswer String
@@ -62,8 +54,35 @@ type Answer
     | OrdinalAnswer (Dict Int String)
 
 
+type alias QuestionId =
+    Uuid
+
+
+type alias OptionId =
+    Uuid
+
+
 type alias Tab =
     String
+
+
+initialModel : Model
+initialModel =
+    let
+        ( uuid, seed ) =
+            Pcg.step Uuid.uuidGenerator (Pcg.initialSeed 291892861)
+    in
+        { userName = "foo"
+        , title = ""
+        , description = ""
+        , tabs = [ "questions", "answers" ]
+        , activeTab = "questions"
+        , questions = [ newQuestion [] uuid ]
+        , activeQuestionId = Nothing
+        , uuidSeed = seed
+        , serverSocketAddress = "0.0.0.0:8000"
+        , serverMessages = []
+        }
 
 
 newQuestion : List Question -> Uuid -> Question

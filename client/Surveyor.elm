@@ -13,26 +13,7 @@ import WebSocket
 
 init : ( Model, Cmd Msg )
 init =
-    let
-        ( uuid, seed ) =
-            Pcg.step Uuid.uuidGenerator (Pcg.initialSeed 291892861)
-
-        initialModel =
-            { userName = "foo"
-            , title = ""
-            , description = ""
-            , tabs = [ "questions", "answers" ]
-            , activeTab = "questions"
-            , questions = [ newQuestion [] uuid ]
-            , activeQuestionId = Nothing
-            , uuidSeed = seed
-            , serverSocketAddress = "0.0.0.0:8000"
-            , serverMessages = []
-            }
-    in
-        ( initialModel
-        , register initialModel
-        )
+    ( initialModel, register initialModel )
 
 
 
@@ -124,21 +105,6 @@ update msg model =
             model ! []
 
 
-receiveFromServer : Model -> String -> Model
-receiveFromServer model message =
-    case (SurveyJson.decodeSurvey message) of
-        Ok newSurvey ->
-            { model
-                | title = newSurvey.title
-                , description = newSurvey.description
-                , questions = newSurvey.questions
-                , serverMessages = message :: model.serverMessages
-            }
-
-        Err error ->
-            { model | serverMessages = message :: model.serverMessages }
-
-
 register : Model -> Cmd Msg
 register model =
     let
@@ -155,6 +121,21 @@ sendToServer model =
                 ("ws://" ++ model.serverSocketAddress)
                 (SurveyJson.encodeModel model)
           ]
+
+
+receiveFromServer : Model -> String -> Model
+receiveFromServer model message =
+    case (SurveyJson.decodeSurvey message) of
+        Ok newSurvey ->
+            { model
+                | title = newSurvey.title
+                , description = newSurvey.description
+                , questions = newSurvey.questions
+                , serverMessages = message :: model.serverMessages
+            }
+
+        Err error ->
+            { model | serverMessages = message :: model.serverMessages }
 
 
 editFormat : Question -> String -> Question -> Question

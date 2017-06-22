@@ -10145,10 +10145,45 @@ var _user$project$Types$newQuestion = F2(
 			options: {ctor: '[]'}
 		};
 	});
+var _user$project$Types$initialModel = function () {
+	var _p1 = A2(
+		_mgold$elm_random_pcg$Random_Pcg$step,
+		_danyx23$elm_uuid$Uuid$uuidGenerator,
+		_mgold$elm_random_pcg$Random_Pcg$initialSeed(291892861));
+	var uuid = _p1._0;
+	var seed = _p1._1;
+	return {
+		userName: 'foo',
+		title: '',
+		description: '',
+		tabs: {
+			ctor: '::',
+			_0: 'questions',
+			_1: {
+				ctor: '::',
+				_0: 'answers',
+				_1: {ctor: '[]'}
+			}
+		},
+		activeTab: 'questions',
+		questions: {
+			ctor: '::',
+			_0: A2(
+				_user$project$Types$newQuestion,
+				{ctor: '[]'},
+				uuid),
+			_1: {ctor: '[]'}
+		},
+		activeQuestionId: _elm_lang$core$Maybe$Nothing,
+		uuidSeed: seed,
+		serverSocketAddress: '0.0.0.0:8000',
+		serverMessages: {ctor: '[]'}
+	};
+}();
 var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
 var _user$project$Types$parseQuestionFormat = function (format) {
-	var _p1 = format;
-	switch (_p1) {
+	var _p2 = format;
+	switch (_p2) {
 		case 'Open ended':
 			return _user$project$Types$OpenEnded;
 		case 'Multi choice':
@@ -10619,26 +10654,6 @@ var _user$project$Surveyor$editFormat = F3(
 				format: _user$project$Types$parseQuestionFormat(newFormat)
 			}) : question;
 	});
-var _user$project$Surveyor$sendToServer = function (model) {
-	return A2(
-		_elm_lang$core$Platform_Cmd_ops['!'],
-		model,
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$websocket$WebSocket$send,
-				A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
-				_user$project$SurveyJson$encodeModel(model)),
-			_1: {ctor: '[]'}
-		});
-};
-var _user$project$Surveyor$register = function (model) {
-	var msg = A2(_elm_lang$core$Basics_ops['++'], 'register as ', model.userName);
-	return A2(
-		_elm_lang$websocket$WebSocket$send,
-		A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
-		msg);
-};
 var _user$project$Surveyor$receiveFromServer = F2(
 	function (model, message) {
 		var _p0 = _user$project$SurveyJson$decodeSurvey(message);
@@ -10660,46 +10675,31 @@ var _user$project$Surveyor$receiveFromServer = F2(
 				});
 		}
 	});
-var _user$project$Surveyor$init = function () {
-	var _p2 = A2(
-		_mgold$elm_random_pcg$Random_Pcg$step,
-		_danyx23$elm_uuid$Uuid$uuidGenerator,
-		_mgold$elm_random_pcg$Random_Pcg$initialSeed(291892861));
-	var uuid = _p2._0;
-	var seed = _p2._1;
-	var initialModel = {
-		userName: 'foo',
-		title: '',
-		description: '',
-		tabs: {
-			ctor: '::',
-			_0: 'questions',
-			_1: {
-				ctor: '::',
-				_0: 'answers',
-				_1: {ctor: '[]'}
-			}
-		},
-		activeTab: 'questions',
-		questions: {
+var _user$project$Surveyor$sendToServer = function (model) {
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		model,
+		{
 			ctor: '::',
 			_0: A2(
-				_user$project$Types$newQuestion,
-				{ctor: '[]'},
-				uuid),
+				_elm_lang$websocket$WebSocket$send,
+				A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
+				_user$project$SurveyJson$encodeModel(model)),
 			_1: {ctor: '[]'}
-		},
-		activeQuestionId: _elm_lang$core$Maybe$Nothing,
-		uuidSeed: seed,
-		serverSocketAddress: '0.0.0.0:8000',
-		serverMessages: {ctor: '[]'}
-	};
-	return {
-		ctor: '_Tuple2',
-		_0: initialModel,
-		_1: _user$project$Surveyor$register(initialModel)
-	};
-}();
+		});
+};
+var _user$project$Surveyor$register = function (model) {
+	var msg = A2(_elm_lang$core$Basics_ops['++'], 'register as ', model.userName);
+	return A2(
+		_elm_lang$websocket$WebSocket$send,
+		A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
+		msg);
+};
+var _user$project$Surveyor$init = {
+	ctor: '_Tuple2',
+	_0: _user$project$Types$initialModel,
+	_1: _user$project$Surveyor$register(_user$project$Types$initialModel)
+};
 var _user$project$Surveyor$selectOptionText = _elm_lang$core$Native_Platform.outgoingPort(
 	'selectOptionText',
 	function (v) {
@@ -10707,29 +10707,29 @@ var _user$project$Surveyor$selectOptionText = _elm_lang$core$Native_Platform.out
 	});
 var _user$project$Surveyor$update = F2(
 	function (msg, model) {
-		var _p3 = msg;
-		switch (_p3.ctor) {
+		var _p2 = msg;
+		switch (_p2.ctor) {
 			case 'TabClicked':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{activeTab: _p3._0}),
+						{activeTab: _p2._0}),
 					{ctor: '[]'});
 			case 'TitleEdited':
 				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{title: _p3._0}));
+						{title: _p2._0}));
 			case 'DescriptionEdited':
 				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{description: _p3._0}));
+						{description: _p2._0}));
 			case 'QuestionAdded':
-				var _p4 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
-				var newUuid = _p4._0;
-				var newSeed = _p4._1;
+				var _p3 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
+				var newUuid = _p3._0;
+				var newSeed = _p3._1;
 				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
@@ -10745,14 +10745,14 @@ var _user$project$Surveyor$update = F2(
 								})
 						}));
 			case 'QuestionClicked':
-				var _p5 = _p3._0;
-				if (_p5.ctor === 'Just') {
+				var _p4 = _p2._0;
+				if (_p4.ctor === 'Just') {
 					return A2(
 						_elm_lang$core$Platform_Cmd_ops['!'],
 						_elm_lang$core$Native_Utils.update(
 							model,
 							{
-								activeQuestionId: _elm_lang$core$Maybe$Just(_p5._0)
+								activeQuestionId: _elm_lang$core$Maybe$Just(_p4._0)
 							}),
 						{ctor: '[]'});
 				} else {
@@ -10770,7 +10770,7 @@ var _user$project$Surveyor$update = F2(
 						{
 							questions: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Surveyor$editFormat, _p3._0, _p3._1),
+								A2(_user$project$Surveyor$editFormat, _p2._0, _p2._1),
 								model.questions)
 						}));
 			case 'PromptEdited':
@@ -10780,17 +10780,17 @@ var _user$project$Surveyor$update = F2(
 						{
 							questions: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Surveyor$editPrompt, _p3._0, _p3._1),
+								A2(_user$project$Surveyor$editPrompt, _p2._0, _p2._1),
 								model.questions)
 						}));
 			case 'OptionAdded':
-				var _p8 = _p3._0;
-				var _p6 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
-				var newUuid = _p6._0;
-				var newSeed = _p6._1;
-				var option = A2(_user$project$Types$newOption, _p8.id, newUuid);
-				var _p7 = option;
-				if (_p7.ctor === 'Just') {
+				var _p7 = _p2._0;
+				var _p5 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
+				var newUuid = _p5._0;
+				var newSeed = _p5._1;
+				var option = A2(_user$project$Types$newOption, _p7.id, newUuid);
+				var _p6 = option;
+				if (_p6.ctor === 'Just') {
 					return _user$project$Surveyor$sendToServer(
 						_elm_lang$core$Native_Utils.update(
 							model,
@@ -10798,7 +10798,7 @@ var _user$project$Surveyor$update = F2(
 								uuidSeed: newSeed,
 								questions: A2(
 									_elm_lang$core$List$map,
-									A2(_user$project$Surveyor$addOption, _p7._0, _p8),
+									A2(_user$project$Surveyor$addOption, _p6._0, _p7),
 									model.questions)
 							}));
 				} else {
@@ -10814,7 +10814,7 @@ var _user$project$Surveyor$update = F2(
 						{
 							questions: A2(
 								_elm_lang$core$List$map,
-								A3(_user$project$Surveyor$editOption, _p3._0, _p3._1, _p3._2),
+								A3(_user$project$Surveyor$editOption, _p2._0, _p2._1, _p2._2),
 								model.questions)
 						}));
 			case 'OptionRemoved':
@@ -10824,19 +10824,19 @@ var _user$project$Surveyor$update = F2(
 						{
 							questions: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Surveyor$removeOption, _p3._0, _p3._1),
+								A2(_user$project$Surveyor$removeOption, _p2._0, _p2._1),
 								model.questions)
 						}));
 			case 'SelectOptionText':
-				var _p9 = _p3._0.id;
-				if (_p9.ctor === 'Just') {
+				var _p8 = _p2._0.id;
+				if (_p8.ctor === 'Just') {
 					return A2(
 						_elm_lang$core$Platform_Cmd_ops['!'],
 						model,
 						{
 							ctor: '::',
 							_0: _user$project$Surveyor$selectOptionText(
-								_danyx23$elm_uuid$Uuid$toString(_p9._0)),
+								_danyx23$elm_uuid$Uuid$toString(_p8._0)),
 							_1: {ctor: '[]'}
 						});
 				} else {
@@ -10848,7 +10848,7 @@ var _user$project$Surveyor$update = F2(
 			case 'ReceiveMessage':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
-					A2(_user$project$Surveyor$receiveFromServer, model, _p3._0),
+					A2(_user$project$Surveyor$receiveFromServer, model, _p2._0),
 					{ctor: '[]'});
 			default:
 				return A2(
@@ -10881,9 +10881,9 @@ var _user$project$Surveyor$OptionEdited = F3(
 var _user$project$Surveyor$viewOption = F2(
 	function (question, option) {
 		var uuid = function () {
-			var _p10 = option.id;
-			if (_p10.ctor === 'Just') {
-				return _danyx23$elm_uuid$Uuid$toString(_p10._0);
+			var _p9 = option.id;
+			if (_p9.ctor === 'Just') {
+				return _danyx23$elm_uuid$Uuid$toString(_p9._0);
 			} else {
 				return '';
 			}
@@ -11191,9 +11191,9 @@ var _user$project$Surveyor$QuestionClicked = function (a) {
 var _user$project$Surveyor$editableQuestion = F3(
 	function (model, question, elements) {
 		var activeClass = function () {
-			var _p11 = {ctor: '_Tuple2', _0: model.activeQuestionId, _1: question.id};
-			if (((_p11.ctor === '_Tuple2') && (_p11._0.ctor === 'Just')) && (_p11._1.ctor === 'Just')) {
-				return _elm_lang$core$Native_Utils.eq(_p11._1._0, _p11._0._0) ? '  is-active' : '';
+			var _p10 = {ctor: '_Tuple2', _0: model.activeQuestionId, _1: question.id};
+			if (((_p10.ctor === '_Tuple2') && (_p10._0.ctor === 'Just')) && (_p10._1.ctor === 'Just')) {
+				return _elm_lang$core$Native_Utils.eq(_p10._1._0, _p10._0._0) ? '  is-active' : '';
 			} else {
 				return '';
 			}
@@ -11260,8 +11260,8 @@ var _user$project$Surveyor$editableQuestion = F3(
 var _user$project$Surveyor$viewQuestion = F2(
 	function (model, question) {
 		var options = function () {
-			var _p12 = question.format;
-			switch (_p12.ctor) {
+			var _p11 = question.format;
+			switch (_p11.ctor) {
 				case 'OpenEnded':
 					return {
 						ctor: '::',
