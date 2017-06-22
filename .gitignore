@@ -16,3 +16,4 @@ TAGS
 
 # Haskell files
 .stack-work
+.sass-cache

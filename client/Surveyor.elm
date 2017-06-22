@@ -1,23 +1,14 @@
-port module Survey exposing (Model, Msg, init, update, view, subscriptions)
+port module Surveyor exposing (Msg, init, update, view, subscriptions)
 
 import Html exposing (..)
-import Html.Attributes exposing (autofocus, class, disabled, id, name, placeholder, selected, type_, value)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onFocus, onInput)
 import List
 import Random.Pcg as Pcg
+import SurveyJson
 import Types exposing (..)
 import Uuid
-
-
-type alias Model =
-    { title : String
-    , description : String
-    , tabs : List Tab
-    , activeTab : Tab
-    , questions : List Question
-    , activeQuestionId : Maybe QuestionId
-    , uuidSeed : Pcg.Seed
-    }
+import WebSocket
 
 
 init : ( Model, Cmd Msg )
@@ -25,16 +16,22 @@ init =
     let
         ( uuid, seed ) =
             Pcg.step Uuid.uuidGenerator (Pcg.initialSeed 291892861)
+
+        initialModel =
+            { userName = "foo"
+            , title = ""
+            , description = ""
+            , tabs = [ "questions", "answers" ]
+            , activeTab = "questions"
+            , questions = [ newQuestion [] uuid ]
+            , activeQuestionId = Nothing
+            , uuidSeed = seed
+            , serverSocketAddress = "0.0.0.0:8000"
+            , serverMessages = []
+            }
     in
-        ( { title = ""
-          , description = ""
-          , tabs = [ "questions", "answers" ]
-          , activeTab = "questions"
-          , questions = [ newQuestion [] uuid ]
-          , activeQuestionId = Nothing
-          , uuidSeed = seed
-          }
-        , Cmd.none
+        ( initialModel
+        , register initialModel
         )
 
 
@@ -47,13 +44,14 @@ type Msg
     | TitleEdited String
     | DescriptionEdited String
     | QuestionAdded
-    | QuestionClicked QuestionId
+    | QuestionClicked (Maybe QuestionId)
     | FormatSelected Question String
     | PromptEdited Question String
     | OptionAdded Question
     | OptionEdited Question Option String
     | OptionRemoved Question Option
     | SelectOptionText Option
+    | ReceiveMessage String
     | NoOp
 
 
@@ -64,26 +62,31 @@ update msg model =
             { model | activeTab = tab } ! []
 
         TitleEdited title ->
-            { model | title = title } ! []
+            sendToServer { model | title = title }
 
         DescriptionEdited description ->
-            { model | description = description } ! []
+            sendToServer { model | description = description }
 
         QuestionAdded ->
             let
                 ( newUuid, newSeed ) =
                     Pcg.step Uuid.uuidGenerator model.uuidSeed
             in
-                { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] } ! []
+                sendToServer { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] }
 
         QuestionClicked questionId ->
-            { model | activeQuestionId = Just questionId } ! []
+            case questionId of
+                Just id ->
+                    { model | activeQuestionId = Just id } ! []
+
+                Nothing ->
+                    { model | activeQuestionId = Nothing } ! []
 
         FormatSelected question format ->
-            { model | questions = List.map (editFormat question format) model.questions } ! []
+            sendToServer { model | questions = List.map (editFormat question format) model.questions }
 
         PromptEdited question prompt ->
-            { model | questions = List.map (editPrompt question prompt) model.questions } ! []
+            sendToServer { model | questions = List.map (editPrompt question prompt) model.questions }
 
         OptionAdded question ->
             let
@@ -93,19 +96,65 @@ update msg model =
                 option =
                     newOption question.id newUuid
             in
-                { model | uuidSeed = newSeed, questions = List.map (addOption option question) model.questions } ! []
+                case option of
+                    Just opt ->
+                        sendToServer { model | uuidSeed = newSeed, questions = List.map (addOption opt question) model.questions }
+
+                    Nothing ->
+                        model ! []
 
         OptionEdited question option newText ->
-            { model | questions = List.map (editOption question option newText) model.questions } ! []
+            sendToServer { model | questions = List.map (editOption question option newText) model.questions }
 
         OptionRemoved question option ->
-            { model | questions = List.map (removeOption question option) model.questions } ! []
+            sendToServer { model | questions = List.map (removeOption question option) model.questions }
 
         SelectOptionText option ->
-            model ! [ selectOptionText (Uuid.toString option.id) ]
+            case option.id of
+                Just id ->
+                    model ! [ selectOptionText (Uuid.toString id) ]
+
+                Nothing ->
+                    model ! []
+
+        ReceiveMessage message ->
+            receiveFromServer model message ! []
 
         NoOp ->
             model ! []
+
+
+receiveFromServer : Model -> String -> Model
+receiveFromServer model message =
+    case (SurveyJson.decodeSurvey message) of
+        Ok newSurvey ->
+            { model
+                | title = newSurvey.title
+                , description = newSurvey.description
+                , questions = newSurvey.questions
+                , serverMessages = message :: model.serverMessages
+            }
+
+        Err error ->
+            { model | serverMessages = message :: model.serverMessages }
+
+
+register : Model -> Cmd Msg
+register model =
+    let
+        msg =
+            "register as " ++ model.userName
+    in
+        WebSocket.send ("ws://" ++ model.serverSocketAddress) msg
+
+
+sendToServer : Model -> ( Model, Cmd Msg )
+sendToServer model =
+    model
+        ! [ WebSocket.send
+                ("ws://" ++ model.serverSocketAddress)
+                (SurveyJson.encodeModel model)
+          ]
 
 
 editFormat : Question -> String -> Question -> Question
@@ -160,7 +209,7 @@ port selectOptionText : String -> Cmd msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    WebSocket.listen ("ws://" ++ model.serverSocketAddress) ReceiveMessage
 
 
 
@@ -170,13 +219,55 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div [ class "page" ]
-        [ div [ class "nav", id "main-menu" ] []
+        [ navBar model
+        , div [ class "section", id "server-messages" ]
+            (List.map viewServerMessage model.serverMessages)
         , div [ class "section" ]
             [ div [ class "container" ]
                 [ tabMenu model ]
             , div [ class "container" ]
                 [ titleAndDescription model
                 , surveySection model
+                ]
+            ]
+        ]
+
+
+viewServerMessage : String -> Html Msg
+viewServerMessage message =
+    div [] [ text message ]
+
+
+navBar : Model -> Html Msg
+navBar model =
+    nav [ class "nav has-shadow" ]
+        [ div [ class "container" ]
+            [ div [ class "nav-left" ]
+                [ a [ class "nav-item" ]
+                    [ i [ class "fa fa-arrow-left", attribute "aria-hidden" "true" ] [] ]
+                , a [ class "nav-item is-tab is-hidden-mobile is-active" ]
+                    [ text "Home" ]
+                , a [ class "nav-item is-tab is-hidden-mobile" ]
+                    [ text "About" ]
+                ]
+            , span [ class "nav-toggle" ]
+                [ span []
+                    []
+                , span []
+                    []
+                , span []
+                    []
+                ]
+            , div [ class "nav-right nav-menu" ]
+                [ a [ class "nav-item is-tab is-hidden-tablet is-active" ]
+                    [ text "Home" ]
+                , a [ class "nav-item is-tab is-hidden-tablet" ]
+                    [ text "Features" ]
+                , a [ class "nav-item is-tab is-hidden-tablet" ]
+                    [ text "About" ]
+                , a [ class "nav-item is-tab" ]
+                    [ i [ class "fa fa-eye fa-2x", attribute "aria-hidden" "true" ] []
+                    ]
                 ]
             ]
         ]
@@ -232,7 +323,7 @@ titleAndDescription model =
 surveySection : Model -> Html Msg
 surveySection model =
     if model.activeTab == "questions" then
-        div []
+        div [ class "section" ]
             ((List.map (viewQuestion model) model.questions)
                 ++ [ addQuestionButton model ]
             )
@@ -262,14 +353,14 @@ editableQuestion : Model -> Question -> List (Html Msg) -> Html Msg
 editableQuestion model question elements =
     let
         activeClass =
-            case model.activeQuestionId of
-                Just id ->
-                    if question.id == id then
-                        " raised red"
+            case ( model.activeQuestionId, question.id ) of
+                ( Just id, Just questionId ) ->
+                    if questionId == id then
+                        "  is-active"
                     else
                         ""
 
-                Nothing ->
+                _ ->
                     ""
     in
         div
@@ -324,34 +415,44 @@ multiChoiceOptions question =
 
 viewOption : Question -> Option -> Html Msg
 viewOption question option =
-    div [ class "field has-addons" ]
-        [ div [ class "control" ]
-            [ input
-                [ type_ "radio"
-                , name (toString question.id)
-                , onClick NoOp
+    let
+        uuid =
+            case option.id of
+                Just id ->
+                    Uuid.toString id
+
+                Nothing ->
+                    ""
+    in
+        div [ class "field has-addons" ]
+            [ div [ class "control" ]
+                [ input
+                    [ type_ "radio"
+                    , name (toString question.id)
+                    , onClick NoOp
+                    , disabled True
+                    ]
+                    []
                 ]
-                []
-            ]
-        , div [ class "control is-expanded" ]
-            [ input
-                [ id (Uuid.toString option.id)
-                , class "input is-small is-borderless"
-                , value option.text
-                , placeholder "Option ..."
-                , onInput (OptionEdited question option)
-                , onFocus (SelectOptionText option)
+            , div [ class "control is-expanded" ]
+                [ input
+                    [ id uuid
+                    , class "input is-small is-borderless"
+                    , value option.text
+                    , placeholder "Option ..."
+                    , onInput (OptionEdited question option)
+                    , onFocus (SelectOptionText option)
+                    ]
+                    []
                 ]
-                []
-            ]
-        , div [ class "control" ]
-            [ a
-                [ class "button is-danger is-small"
-                , onClick (OptionRemoved question option)
+            , div [ class "control" ]
+                [ a
+                    [ class "button is-danger is-small"
+                    , onClick (OptionRemoved question option)
+                    ]
+                    [ text "x" ]
                 ]
-                [ text "x" ]
             ]
-        ]
 
 
 addOptionRadio : Question -> Html Msg

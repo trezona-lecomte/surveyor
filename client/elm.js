@@ -135,28 +135,6 @@ function A9(fun, a, b, c, d, e, f, g, h, i)
     : fun(a)(b)(c)(d)(e)(f)(g)(h)(i);
 }
 
-var _elm_lang$core$Native_Bitwise = function() {
-
-return {
-	and: F2(function and(a, b) { return a & b; }),
-	or: F2(function or(a, b) { return a | b; }),
-	xor: F2(function xor(a, b) { return a ^ b; }),
-	complement: function complement(a) { return ~a; },
-	shiftLeftBy: F2(function(offset, a) { return a << offset; }),
-	shiftRightBy: F2(function(offset, a) { return a >> offset; }),
-	shiftRightZfBy: F2(function(offset, a) { return a >>> offset; })
-};
-
-}();
-
-var _elm_lang$core$Bitwise$shiftRightZfBy = _elm_lang$core$Native_Bitwise.shiftRightZfBy;
-var _elm_lang$core$Bitwise$shiftRightBy = _elm_lang$core$Native_Bitwise.shiftRightBy;
-var _elm_lang$core$Bitwise$shiftLeftBy = _elm_lang$core$Native_Bitwise.shiftLeftBy;
-var _elm_lang$core$Bitwise$complement = _elm_lang$core$Native_Bitwise.complement;
-var _elm_lang$core$Bitwise$xor = _elm_lang$core$Native_Bitwise.xor;
-var _elm_lang$core$Bitwise$or = _elm_lang$core$Native_Bitwise.or;
-var _elm_lang$core$Bitwise$and = _elm_lang$core$Native_Bitwise.and;
-
 //import Native.List //
 
 var _elm_lang$core$Native_Array = function() {
@@ -2697,593 +2675,6 @@ var _elm_lang$core$Array$repeat = F2(
 	});
 var _elm_lang$core$Array$Array = {ctor: 'Array'};
 
-//import Maybe, Native.Array, Native.List, Native.Utils, Result //
-
-var _elm_lang$core$Native_Json = function() {
-
-
-// CORE DECODERS
-
-function succeed(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'succeed',
-		msg: msg
-	};
-}
-
-function fail(msg)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'fail',
-		msg: msg
-	};
-}
-
-function decodePrimitive(tag)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag
-	};
-}
-
-function decodeContainer(tag, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: tag,
-		decoder: decoder
-	};
-}
-
-function decodeNull(value)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'null',
-		value: value
-	};
-}
-
-function decodeField(field, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'field',
-		field: field,
-		decoder: decoder
-	};
-}
-
-function decodeIndex(index, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'index',
-		index: index,
-		decoder: decoder
-	};
-}
-
-function decodeKeyValuePairs(decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'key-value',
-		decoder: decoder
-	};
-}
-
-function mapMany(f, decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'map-many',
-		func: f,
-		decoders: decoders
-	};
-}
-
-function andThen(callback, decoder)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'andThen',
-		decoder: decoder,
-		callback: callback
-	};
-}
-
-function oneOf(decoders)
-{
-	return {
-		ctor: '<decoder>',
-		tag: 'oneOf',
-		decoders: decoders
-	};
-}
-
-
-// DECODING OBJECTS
-
-function map1(f, d1)
-{
-	return mapMany(f, [d1]);
-}
-
-function map2(f, d1, d2)
-{
-	return mapMany(f, [d1, d2]);
-}
-
-function map3(f, d1, d2, d3)
-{
-	return mapMany(f, [d1, d2, d3]);
-}
-
-function map4(f, d1, d2, d3, d4)
-{
-	return mapMany(f, [d1, d2, d3, d4]);
-}
-
-function map5(f, d1, d2, d3, d4, d5)
-{
-	return mapMany(f, [d1, d2, d3, d4, d5]);
-}
-
-function map6(f, d1, d2, d3, d4, d5, d6)
-{
-	return mapMany(f, [d1, d2, d3, d4, d5, d6]);
-}
-
-function map7(f, d1, d2, d3, d4, d5, d6, d7)
-{
-	return mapMany(f, [d1, d2, d3, d4, d5, d6, d7]);
-}
-
-function map8(f, d1, d2, d3, d4, d5, d6, d7, d8)
-{
-	return mapMany(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
-}
-
-
-// DECODE HELPERS
-
-function ok(value)
-{
-	return { tag: 'ok', value: value };
-}
-
-function badPrimitive(type, value)
-{
-	return { tag: 'primitive', type: type, value: value };
-}
-
-function badIndex(index, nestedProblems)
-{
-	return { tag: 'index', index: index, rest: nestedProblems };
-}
-
-function badField(field, nestedProblems)
-{
-	return { tag: 'field', field: field, rest: nestedProblems };
-}
-
-function badIndex(index, nestedProblems)
-{
-	return { tag: 'index', index: index, rest: nestedProblems };
-}
-
-function badOneOf(problems)
-{
-	return { tag: 'oneOf', problems: problems };
-}
-
-function bad(msg)
-{
-	return { tag: 'fail', msg: msg };
-}
-
-function badToString(problem)
-{
-	var context = '_';
-	while (problem)
-	{
-		switch (problem.tag)
-		{
-			case 'primitive':
-				return 'Expecting ' + problem.type
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ' but instead got: ' + jsToString(problem.value);
-
-			case 'index':
-				context += '[' + problem.index + ']';
-				problem = problem.rest;
-				break;
-
-			case 'field':
-				context += '.' + problem.field;
-				problem = problem.rest;
-				break;
-
-			case 'oneOf':
-				var problems = problem.problems;
-				for (var i = 0; i < problems.length; i++)
-				{
-					problems[i] = badToString(problems[i]);
-				}
-				return 'I ran into the following problems'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ':\n\n' + problems.join('\n');
-
-			case 'fail':
-				return 'I ran into a `fail` decoder'
-					+ (context === '_' ? '' : ' at ' + context)
-					+ ': ' + problem.msg;
-		}
-	}
-}
-
-function jsToString(value)
-{
-	return value === undefined
-		? 'undefined'
-		: JSON.stringify(value);
-}
-
-
-// DECODE
-
-function runOnString(decoder, string)
-{
-	var json;
-	try
-	{
-		json = JSON.parse(string);
-	}
-	catch (e)
-	{
-		return _elm_lang$core$Result$Err('Given an invalid JSON: ' + e.message);
-	}
-	return run(decoder, json);
-}
-
-function run(decoder, value)
-{
-	var result = runHelp(decoder, value);
-	return (result.tag === 'ok')
-		? _elm_lang$core$Result$Ok(result.value)
-		: _elm_lang$core$Result$Err(badToString(result));
-}
-
-function runHelp(decoder, value)
-{
-	switch (decoder.tag)
-	{
-		case 'bool':
-			return (typeof value === 'boolean')
-				? ok(value)
-				: badPrimitive('a Bool', value);
-
-		case 'int':
-			if (typeof value !== 'number') {
-				return badPrimitive('an Int', value);
-			}
-
-			if (-2147483647 < value && value < 2147483647 && (value | 0) === value) {
-				return ok(value);
-			}
-
-			if (isFinite(value) && !(value % 1)) {
-				return ok(value);
-			}
-
-			return badPrimitive('an Int', value);
-
-		case 'float':
-			return (typeof value === 'number')
-				? ok(value)
-				: badPrimitive('a Float', value);
-
-		case 'string':
-			return (typeof value === 'string')
-				? ok(value)
-				: (value instanceof String)
-					? ok(value + '')
-					: badPrimitive('a String', value);
-
-		case 'null':
-			return (value === null)
-				? ok(decoder.value)
-				: badPrimitive('null', value);
-
-		case 'value':
-			return ok(value);
-
-		case 'list':
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('a List', value);
-			}
-
-			var list = _elm_lang$core$Native_List.Nil;
-			for (var i = value.length; i--; )
-			{
-				var result = runHelp(decoder.decoder, value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result)
-				}
-				list = _elm_lang$core$Native_List.Cons(result.value, list);
-			}
-			return ok(list);
-
-		case 'array':
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('an Array', value);
-			}
-
-			var len = value.length;
-			var array = new Array(len);
-			for (var i = len; i--; )
-			{
-				var result = runHelp(decoder.decoder, value[i]);
-				if (result.tag !== 'ok')
-				{
-					return badIndex(i, result);
-				}
-				array[i] = result.value;
-			}
-			return ok(_elm_lang$core$Native_Array.fromJSArray(array));
-
-		case 'maybe':
-			var result = runHelp(decoder.decoder, value);
-			return (result.tag === 'ok')
-				? ok(_elm_lang$core$Maybe$Just(result.value))
-				: ok(_elm_lang$core$Maybe$Nothing);
-
-		case 'field':
-			var field = decoder.field;
-			if (typeof value !== 'object' || value === null || !(field in value))
-			{
-				return badPrimitive('an object with a field named `' + field + '`', value);
-			}
-
-			var result = runHelp(decoder.decoder, value[field]);
-			return (result.tag === 'ok') ? result : badField(field, result);
-
-		case 'index':
-			var index = decoder.index;
-			if (!(value instanceof Array))
-			{
-				return badPrimitive('an array', value);
-			}
-			if (index >= value.length)
-			{
-				return badPrimitive('a longer array. Need index ' + index + ' but there are only ' + value.length + ' entries', value);
-			}
-
-			var result = runHelp(decoder.decoder, value[index]);
-			return (result.tag === 'ok') ? result : badIndex(index, result);
-
-		case 'key-value':
-			if (typeof value !== 'object' || value === null || value instanceof Array)
-			{
-				return badPrimitive('an object', value);
-			}
-
-			var keyValuePairs = _elm_lang$core$Native_List.Nil;
-			for (var key in value)
-			{
-				var result = runHelp(decoder.decoder, value[key]);
-				if (result.tag !== 'ok')
-				{
-					return badField(key, result);
-				}
-				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
-				keyValuePairs = _elm_lang$core$Native_List.Cons(pair, keyValuePairs);
-			}
-			return ok(keyValuePairs);
-
-		case 'map-many':
-			var answer = decoder.func;
-			var decoders = decoder.decoders;
-			for (var i = 0; i < decoders.length; i++)
-			{
-				var result = runHelp(decoders[i], value);
-				if (result.tag !== 'ok')
-				{
-					return result;
-				}
-				answer = answer(result.value);
-			}
-			return ok(answer);
-
-		case 'andThen':
-			var result = runHelp(decoder.decoder, value);
-			return (result.tag !== 'ok')
-				? result
-				: runHelp(decoder.callback(result.value), value);
-
-		case 'oneOf':
-			var errors = [];
-			var temp = decoder.decoders;
-			while (temp.ctor !== '[]')
-			{
-				var result = runHelp(temp._0, value);
-
-				if (result.tag === 'ok')
-				{
-					return result;
-				}
-
-				errors.push(result);
-
-				temp = temp._1;
-			}
-			return badOneOf(errors);
-
-		case 'fail':
-			return bad(decoder.msg);
-
-		case 'succeed':
-			return ok(decoder.msg);
-	}
-}
-
-
-// EQUALITY
-
-function equality(a, b)
-{
-	if (a === b)
-	{
-		return true;
-	}
-
-	if (a.tag !== b.tag)
-	{
-		return false;
-	}
-
-	switch (a.tag)
-	{
-		case 'succeed':
-		case 'fail':
-			return a.msg === b.msg;
-
-		case 'bool':
-		case 'int':
-		case 'float':
-		case 'string':
-		case 'value':
-			return true;
-
-		case 'null':
-			return a.value === b.value;
-
-		case 'list':
-		case 'array':
-		case 'maybe':
-		case 'key-value':
-			return equality(a.decoder, b.decoder);
-
-		case 'field':
-			return a.field === b.field && equality(a.decoder, b.decoder);
-
-		case 'index':
-			return a.index === b.index && equality(a.decoder, b.decoder);
-
-		case 'map-many':
-			if (a.func !== b.func)
-			{
-				return false;
-			}
-			return listEquality(a.decoders, b.decoders);
-
-		case 'andThen':
-			return a.callback === b.callback && equality(a.decoder, b.decoder);
-
-		case 'oneOf':
-			return listEquality(a.decoders, b.decoders);
-	}
-}
-
-function listEquality(aDecoders, bDecoders)
-{
-	var len = aDecoders.length;
-	if (len !== bDecoders.length)
-	{
-		return false;
-	}
-	for (var i = 0; i < len; i++)
-	{
-		if (!equality(aDecoders[i], bDecoders[i]))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-
-// ENCODE
-
-function encode(indentLevel, value)
-{
-	return JSON.stringify(value, null, indentLevel);
-}
-
-function identity(value)
-{
-	return value;
-}
-
-function encodeObject(keyValuePairs)
-{
-	var obj = {};
-	while (keyValuePairs.ctor !== '[]')
-	{
-		var pair = keyValuePairs._0;
-		obj[pair._0] = pair._1;
-		keyValuePairs = keyValuePairs._1;
-	}
-	return obj;
-}
-
-return {
-	encode: F2(encode),
-	runOnString: F2(runOnString),
-	run: F2(run),
-
-	decodeNull: decodeNull,
-	decodePrimitive: decodePrimitive,
-	decodeContainer: F2(decodeContainer),
-
-	decodeField: F2(decodeField),
-	decodeIndex: F2(decodeIndex),
-
-	map1: F2(map1),
-	map2: F3(map2),
-	map3: F4(map3),
-	map4: F5(map4),
-	map5: F6(map5),
-	map6: F7(map6),
-	map7: F8(map7),
-	map8: F9(map8),
-	decodeKeyValuePairs: decodeKeyValuePairs,
-
-	andThen: F2(andThen),
-	fail: fail,
-	succeed: succeed,
-	oneOf: oneOf,
-
-	identity: identity,
-	encodeNull: null,
-	encodeArray: _elm_lang$core$Native_Array.toJSArray,
-	encodeList: _elm_lang$core$Native_List.toArray,
-	encodeObject: encodeObject,
-
-	equality: equality
-};
-
-}();
-
-var _elm_lang$core$Json_Encode$list = _elm_lang$core$Native_Json.encodeList;
-var _elm_lang$core$Json_Encode$array = _elm_lang$core$Native_Json.encodeArray;
-var _elm_lang$core$Json_Encode$object = _elm_lang$core$Native_Json.encodeObject;
-var _elm_lang$core$Json_Encode$null = _elm_lang$core$Native_Json.encodeNull;
-var _elm_lang$core$Json_Encode$bool = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$float = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$int = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$string = _elm_lang$core$Native_Json.identity;
-var _elm_lang$core$Json_Encode$encode = _elm_lang$core$Native_Json.encode;
-var _elm_lang$core$Json_Encode$Value = {ctor: 'Value'};
-
 //import Native.Utils //
 
 var _elm_lang$core$Native_Debug = function() {
@@ -4814,6 +4205,593 @@ var _elm_lang$core$Dict$diff = F2(
 			t2);
 	});
 
+//import Maybe, Native.Array, Native.List, Native.Utils, Result //
+
+var _elm_lang$core$Native_Json = function() {
+
+
+// CORE DECODERS
+
+function succeed(msg)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'succeed',
+		msg: msg
+	};
+}
+
+function fail(msg)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'fail',
+		msg: msg
+	};
+}
+
+function decodePrimitive(tag)
+{
+	return {
+		ctor: '<decoder>',
+		tag: tag
+	};
+}
+
+function decodeContainer(tag, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: tag,
+		decoder: decoder
+	};
+}
+
+function decodeNull(value)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'null',
+		value: value
+	};
+}
+
+function decodeField(field, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'field',
+		field: field,
+		decoder: decoder
+	};
+}
+
+function decodeIndex(index, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'index',
+		index: index,
+		decoder: decoder
+	};
+}
+
+function decodeKeyValuePairs(decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'key-value',
+		decoder: decoder
+	};
+}
+
+function mapMany(f, decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'map-many',
+		func: f,
+		decoders: decoders
+	};
+}
+
+function andThen(callback, decoder)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'andThen',
+		decoder: decoder,
+		callback: callback
+	};
+}
+
+function oneOf(decoders)
+{
+	return {
+		ctor: '<decoder>',
+		tag: 'oneOf',
+		decoders: decoders
+	};
+}
+
+
+// DECODING OBJECTS
+
+function map1(f, d1)
+{
+	return mapMany(f, [d1]);
+}
+
+function map2(f, d1, d2)
+{
+	return mapMany(f, [d1, d2]);
+}
+
+function map3(f, d1, d2, d3)
+{
+	return mapMany(f, [d1, d2, d3]);
+}
+
+function map4(f, d1, d2, d3, d4)
+{
+	return mapMany(f, [d1, d2, d3, d4]);
+}
+
+function map5(f, d1, d2, d3, d4, d5)
+{
+	return mapMany(f, [d1, d2, d3, d4, d5]);
+}
+
+function map6(f, d1, d2, d3, d4, d5, d6)
+{
+	return mapMany(f, [d1, d2, d3, d4, d5, d6]);
+}
+
+function map7(f, d1, d2, d3, d4, d5, d6, d7)
+{
+	return mapMany(f, [d1, d2, d3, d4, d5, d6, d7]);
+}
+
+function map8(f, d1, d2, d3, d4, d5, d6, d7, d8)
+{
+	return mapMany(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
+}
+
+
+// DECODE HELPERS
+
+function ok(value)
+{
+	return { tag: 'ok', value: value };
+}
+
+function badPrimitive(type, value)
+{
+	return { tag: 'primitive', type: type, value: value };
+}
+
+function badIndex(index, nestedProblems)
+{
+	return { tag: 'index', index: index, rest: nestedProblems };
+}
+
+function badField(field, nestedProblems)
+{
+	return { tag: 'field', field: field, rest: nestedProblems };
+}
+
+function badIndex(index, nestedProblems)
+{
+	return { tag: 'index', index: index, rest: nestedProblems };
+}
+
+function badOneOf(problems)
+{
+	return { tag: 'oneOf', problems: problems };
+}
+
+function bad(msg)
+{
+	return { tag: 'fail', msg: msg };
+}
+
+function badToString(problem)
+{
+	var context = '_';
+	while (problem)
+	{
+		switch (problem.tag)
+		{
+			case 'primitive':
+				return 'Expecting ' + problem.type
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ' but instead got: ' + jsToString(problem.value);
+
+			case 'index':
+				context += '[' + problem.index + ']';
+				problem = problem.rest;
+				break;
+
+			case 'field':
+				context += '.' + problem.field;
+				problem = problem.rest;
+				break;
+
+			case 'oneOf':
+				var problems = problem.problems;
+				for (var i = 0; i < problems.length; i++)
+				{
+					problems[i] = badToString(problems[i]);
+				}
+				return 'I ran into the following problems'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ':\n\n' + problems.join('\n');
+
+			case 'fail':
+				return 'I ran into a `fail` decoder'
+					+ (context === '_' ? '' : ' at ' + context)
+					+ ': ' + problem.msg;
+		}
+	}
+}
+
+function jsToString(value)
+{
+	return value === undefined
+		? 'undefined'
+		: JSON.stringify(value);
+}
+
+
+// DECODE
+
+function runOnString(decoder, string)
+{
+	var json;
+	try
+	{
+		json = JSON.parse(string);
+	}
+	catch (e)
+	{
+		return _elm_lang$core$Result$Err('Given an invalid JSON: ' + e.message);
+	}
+	return run(decoder, json);
+}
+
+function run(decoder, value)
+{
+	var result = runHelp(decoder, value);
+	return (result.tag === 'ok')
+		? _elm_lang$core$Result$Ok(result.value)
+		: _elm_lang$core$Result$Err(badToString(result));
+}
+
+function runHelp(decoder, value)
+{
+	switch (decoder.tag)
+	{
+		case 'bool':
+			return (typeof value === 'boolean')
+				? ok(value)
+				: badPrimitive('a Bool', value);
+
+		case 'int':
+			if (typeof value !== 'number') {
+				return badPrimitive('an Int', value);
+			}
+
+			if (-2147483647 < value && value < 2147483647 && (value | 0) === value) {
+				return ok(value);
+			}
+
+			if (isFinite(value) && !(value % 1)) {
+				return ok(value);
+			}
+
+			return badPrimitive('an Int', value);
+
+		case 'float':
+			return (typeof value === 'number')
+				? ok(value)
+				: badPrimitive('a Float', value);
+
+		case 'string':
+			return (typeof value === 'string')
+				? ok(value)
+				: (value instanceof String)
+					? ok(value + '')
+					: badPrimitive('a String', value);
+
+		case 'null':
+			return (value === null)
+				? ok(decoder.value)
+				: badPrimitive('null', value);
+
+		case 'value':
+			return ok(value);
+
+		case 'list':
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('a List', value);
+			}
+
+			var list = _elm_lang$core$Native_List.Nil;
+			for (var i = value.length; i--; )
+			{
+				var result = runHelp(decoder.decoder, value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result)
+				}
+				list = _elm_lang$core$Native_List.Cons(result.value, list);
+			}
+			return ok(list);
+
+		case 'array':
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('an Array', value);
+			}
+
+			var len = value.length;
+			var array = new Array(len);
+			for (var i = len; i--; )
+			{
+				var result = runHelp(decoder.decoder, value[i]);
+				if (result.tag !== 'ok')
+				{
+					return badIndex(i, result);
+				}
+				array[i] = result.value;
+			}
+			return ok(_elm_lang$core$Native_Array.fromJSArray(array));
+
+		case 'maybe':
+			var result = runHelp(decoder.decoder, value);
+			return (result.tag === 'ok')
+				? ok(_elm_lang$core$Maybe$Just(result.value))
+				: ok(_elm_lang$core$Maybe$Nothing);
+
+		case 'field':
+			var field = decoder.field;
+			if (typeof value !== 'object' || value === null || !(field in value))
+			{
+				return badPrimitive('an object with a field named `' + field + '`', value);
+			}
+
+			var result = runHelp(decoder.decoder, value[field]);
+			return (result.tag === 'ok') ? result : badField(field, result);
+
+		case 'index':
+			var index = decoder.index;
+			if (!(value instanceof Array))
+			{
+				return badPrimitive('an array', value);
+			}
+			if (index >= value.length)
+			{
+				return badPrimitive('a longer array. Need index ' + index + ' but there are only ' + value.length + ' entries', value);
+			}
+
+			var result = runHelp(decoder.decoder, value[index]);
+			return (result.tag === 'ok') ? result : badIndex(index, result);
+
+		case 'key-value':
+			if (typeof value !== 'object' || value === null || value instanceof Array)
+			{
+				return badPrimitive('an object', value);
+			}
+
+			var keyValuePairs = _elm_lang$core$Native_List.Nil;
+			for (var key in value)
+			{
+				var result = runHelp(decoder.decoder, value[key]);
+				if (result.tag !== 'ok')
+				{
+					return badField(key, result);
+				}
+				var pair = _elm_lang$core$Native_Utils.Tuple2(key, result.value);
+				keyValuePairs = _elm_lang$core$Native_List.Cons(pair, keyValuePairs);
+			}
+			return ok(keyValuePairs);
+
+		case 'map-many':
+			var answer = decoder.func;
+			var decoders = decoder.decoders;
+			for (var i = 0; i < decoders.length; i++)
+			{
+				var result = runHelp(decoders[i], value);
+				if (result.tag !== 'ok')
+				{
+					return result;
+				}
+				answer = answer(result.value);
+			}
+			return ok(answer);
+
+		case 'andThen':
+			var result = runHelp(decoder.decoder, value);
+			return (result.tag !== 'ok')
+				? result
+				: runHelp(decoder.callback(result.value), value);
+
+		case 'oneOf':
+			var errors = [];
+			var temp = decoder.decoders;
+			while (temp.ctor !== '[]')
+			{
+				var result = runHelp(temp._0, value);
+
+				if (result.tag === 'ok')
+				{
+					return result;
+				}
+
+				errors.push(result);
+
+				temp = temp._1;
+			}
+			return badOneOf(errors);
+
+		case 'fail':
+			return bad(decoder.msg);
+
+		case 'succeed':
+			return ok(decoder.msg);
+	}
+}
+
+
+// EQUALITY
+
+function equality(a, b)
+{
+	if (a === b)
+	{
+		return true;
+	}
+
+	if (a.tag !== b.tag)
+	{
+		return false;
+	}
+
+	switch (a.tag)
+	{
+		case 'succeed':
+		case 'fail':
+			return a.msg === b.msg;
+
+		case 'bool':
+		case 'int':
+		case 'float':
+		case 'string':
+		case 'value':
+			return true;
+
+		case 'null':
+			return a.value === b.value;
+
+		case 'list':
+		case 'array':
+		case 'maybe':
+		case 'key-value':
+			return equality(a.decoder, b.decoder);
+
+		case 'field':
+			return a.field === b.field && equality(a.decoder, b.decoder);
+
+		case 'index':
+			return a.index === b.index && equality(a.decoder, b.decoder);
+
+		case 'map-many':
+			if (a.func !== b.func)
+			{
+				return false;
+			}
+			return listEquality(a.decoders, b.decoders);
+
+		case 'andThen':
+			return a.callback === b.callback && equality(a.decoder, b.decoder);
+
+		case 'oneOf':
+			return listEquality(a.decoders, b.decoders);
+	}
+}
+
+function listEquality(aDecoders, bDecoders)
+{
+	var len = aDecoders.length;
+	if (len !== bDecoders.length)
+	{
+		return false;
+	}
+	for (var i = 0; i < len; i++)
+	{
+		if (!equality(aDecoders[i], bDecoders[i]))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// ENCODE
+
+function encode(indentLevel, value)
+{
+	return JSON.stringify(value, null, indentLevel);
+}
+
+function identity(value)
+{
+	return value;
+}
+
+function encodeObject(keyValuePairs)
+{
+	var obj = {};
+	while (keyValuePairs.ctor !== '[]')
+	{
+		var pair = keyValuePairs._0;
+		obj[pair._0] = pair._1;
+		keyValuePairs = keyValuePairs._1;
+	}
+	return obj;
+}
+
+return {
+	encode: F2(encode),
+	runOnString: F2(runOnString),
+	run: F2(run),
+
+	decodeNull: decodeNull,
+	decodePrimitive: decodePrimitive,
+	decodeContainer: F2(decodeContainer),
+
+	decodeField: F2(decodeField),
+	decodeIndex: F2(decodeIndex),
+
+	map1: F2(map1),
+	map2: F3(map2),
+	map3: F4(map3),
+	map4: F5(map4),
+	map5: F6(map5),
+	map6: F7(map6),
+	map7: F8(map7),
+	map8: F9(map8),
+	decodeKeyValuePairs: decodeKeyValuePairs,
+
+	andThen: F2(andThen),
+	fail: fail,
+	succeed: succeed,
+	oneOf: oneOf,
+
+	identity: identity,
+	encodeNull: null,
+	encodeArray: _elm_lang$core$Native_Array.toJSArray,
+	encodeList: _elm_lang$core$Native_List.toArray,
+	encodeObject: encodeObject,
+
+	equality: equality
+};
+
+}();
+
+var _elm_lang$core$Json_Encode$list = _elm_lang$core$Native_Json.encodeList;
+var _elm_lang$core$Json_Encode$array = _elm_lang$core$Native_Json.encodeArray;
+var _elm_lang$core$Json_Encode$object = _elm_lang$core$Native_Json.encodeObject;
+var _elm_lang$core$Json_Encode$null = _elm_lang$core$Native_Json.encodeNull;
+var _elm_lang$core$Json_Encode$bool = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$float = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$int = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$string = _elm_lang$core$Native_Json.identity;
+var _elm_lang$core$Json_Encode$encode = _elm_lang$core$Native_Json.encode;
+var _elm_lang$core$Json_Encode$Value = {ctor: 'Value'};
+
 var _elm_lang$core$Json_Decode$null = _elm_lang$core$Native_Json.decodeNull;
 var _elm_lang$core$Json_Decode$value = _elm_lang$core$Native_Json.decodePrimitive('value');
 var _elm_lang$core$Json_Decode$andThen = _elm_lang$core$Native_Json.andThen;
@@ -4877,287 +4855,36 @@ var _elm_lang$core$Json_Decode$bool = _elm_lang$core$Native_Json.decodePrimitive
 var _elm_lang$core$Json_Decode$string = _elm_lang$core$Native_Json.decodePrimitive('string');
 var _elm_lang$core$Json_Decode$Decoder = {ctor: 'Decoder'};
 
-//import Native.Utils //
+var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
+var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 
-var _elm_lang$core$Native_Scheduler = function() {
-
-var MAX_STEPS = 10000;
-
-
-// TASKS
-
-function succeed(value)
-{
-	return {
-		ctor: '_Task_succeed',
-		value: value
-	};
-}
-
-function fail(error)
-{
-	return {
-		ctor: '_Task_fail',
-		value: error
-	};
-}
-
-function nativeBinding(callback)
-{
-	return {
-		ctor: '_Task_nativeBinding',
-		callback: callback,
-		cancel: null
-	};
-}
-
-function andThen(callback, task)
-{
-	return {
-		ctor: '_Task_andThen',
-		callback: callback,
-		task: task
-	};
-}
-
-function onError(callback, task)
-{
-	return {
-		ctor: '_Task_onError',
-		callback: callback,
-		task: task
-	};
-}
-
-function receive(callback)
-{
-	return {
-		ctor: '_Task_receive',
-		callback: callback
-	};
-}
-
-
-// PROCESSES
-
-function rawSpawn(task)
-{
-	var process = {
-		ctor: '_Process',
-		id: _elm_lang$core$Native_Utils.guid(),
-		root: task,
-		stack: null,
-		mailbox: []
-	};
-
-	enqueue(process);
-
-	return process;
-}
-
-function spawn(task)
-{
-	return nativeBinding(function(callback) {
-		var process = rawSpawn(task);
-		callback(succeed(process));
+var _elm_lang$core$Tuple$mapSecond = F2(
+	function (func, _p0) {
+		var _p1 = _p0;
+		return {
+			ctor: '_Tuple2',
+			_0: _p1._0,
+			_1: func(_p1._1)
+		};
 	});
-}
-
-function rawSend(process, msg)
-{
-	process.mailbox.push(msg);
-	enqueue(process);
-}
-
-function send(process, msg)
-{
-	return nativeBinding(function(callback) {
-		rawSend(process, msg);
-		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+var _elm_lang$core$Tuple$mapFirst = F2(
+	function (func, _p2) {
+		var _p3 = _p2;
+		return {
+			ctor: '_Tuple2',
+			_0: func(_p3._0),
+			_1: _p3._1
+		};
 	});
-}
-
-function kill(process)
-{
-	return nativeBinding(function(callback) {
-		var root = process.root;
-		if (root.ctor === '_Task_nativeBinding' && root.cancel)
-		{
-			root.cancel();
-		}
-
-		process.root = null;
-
-		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
-	});
-}
-
-function sleep(time)
-{
-	return nativeBinding(function(callback) {
-		var id = setTimeout(function() {
-			callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
-		}, time);
-
-		return function() { clearTimeout(id); };
-	});
-}
-
-
-// STEP PROCESSES
-
-function step(numSteps, process)
-{
-	while (numSteps < MAX_STEPS)
-	{
-		var ctor = process.root.ctor;
-
-		if (ctor === '_Task_succeed')
-		{
-			while (process.stack && process.stack.ctor === '_Task_onError')
-			{
-				process.stack = process.stack.rest;
-			}
-			if (process.stack === null)
-			{
-				break;
-			}
-			process.root = process.stack.callback(process.root.value);
-			process.stack = process.stack.rest;
-			++numSteps;
-			continue;
-		}
-
-		if (ctor === '_Task_fail')
-		{
-			while (process.stack && process.stack.ctor === '_Task_andThen')
-			{
-				process.stack = process.stack.rest;
-			}
-			if (process.stack === null)
-			{
-				break;
-			}
-			process.root = process.stack.callback(process.root.value);
-			process.stack = process.stack.rest;
-			++numSteps;
-			continue;
-		}
-
-		if (ctor === '_Task_andThen')
-		{
-			process.stack = {
-				ctor: '_Task_andThen',
-				callback: process.root.callback,
-				rest: process.stack
-			};
-			process.root = process.root.task;
-			++numSteps;
-			continue;
-		}
-
-		if (ctor === '_Task_onError')
-		{
-			process.stack = {
-				ctor: '_Task_onError',
-				callback: process.root.callback,
-				rest: process.stack
-			};
-			process.root = process.root.task;
-			++numSteps;
-			continue;
-		}
-
-		if (ctor === '_Task_nativeBinding')
-		{
-			process.root.cancel = process.root.callback(function(newRoot) {
-				process.root = newRoot;
-				enqueue(process);
-			});
-
-			break;
-		}
-
-		if (ctor === '_Task_receive')
-		{
-			var mailbox = process.mailbox;
-			if (mailbox.length === 0)
-			{
-				break;
-			}
-
-			process.root = process.root.callback(mailbox.shift());
-			++numSteps;
-			continue;
-		}
-
-		throw new Error(ctor);
-	}
-
-	if (numSteps < MAX_STEPS)
-	{
-		return numSteps + 1;
-	}
-	enqueue(process);
-
-	return numSteps;
-}
-
-
-// WORK QUEUE
-
-var working = false;
-var workQueue = [];
-
-function enqueue(process)
-{
-	workQueue.push(process);
-
-	if (!working)
-	{
-		setTimeout(work, 0);
-		working = true;
-	}
-}
-
-function work()
-{
-	var numSteps = 0;
-	var process;
-	while (numSteps < MAX_STEPS && (process = workQueue.shift()))
-	{
-		if (process.root)
-		{
-			numSteps = step(numSteps, process);
-		}
-	}
-	if (!process)
-	{
-		working = false;
-		return;
-	}
-	setTimeout(work, 0);
-}
-
-
-return {
-	succeed: succeed,
-	fail: fail,
-	nativeBinding: nativeBinding,
-	andThen: F2(andThen),
-	onError: F2(onError),
-	receive: receive,
-
-	spawn: spawn,
-	kill: kill,
-	sleep: sleep,
-	send: F2(send),
-
-	rawSpawn: rawSpawn,
-	rawSend: rawSend
+var _elm_lang$core$Tuple$second = function (_p4) {
+	var _p5 = _p4;
+	return _p5._1;
+};
+var _elm_lang$core$Tuple$first = function (_p6) {
+	var _p7 = _p6;
+	return _p7._0;
 };
 
-}();
 //import //
 
 var _elm_lang$core$Native_Platform = function() {
@@ -5718,6 +5445,287 @@ return {
 
 }();
 
+//import Native.Utils //
+
+var _elm_lang$core$Native_Scheduler = function() {
+
+var MAX_STEPS = 10000;
+
+
+// TASKS
+
+function succeed(value)
+{
+	return {
+		ctor: '_Task_succeed',
+		value: value
+	};
+}
+
+function fail(error)
+{
+	return {
+		ctor: '_Task_fail',
+		value: error
+	};
+}
+
+function nativeBinding(callback)
+{
+	return {
+		ctor: '_Task_nativeBinding',
+		callback: callback,
+		cancel: null
+	};
+}
+
+function andThen(callback, task)
+{
+	return {
+		ctor: '_Task_andThen',
+		callback: callback,
+		task: task
+	};
+}
+
+function onError(callback, task)
+{
+	return {
+		ctor: '_Task_onError',
+		callback: callback,
+		task: task
+	};
+}
+
+function receive(callback)
+{
+	return {
+		ctor: '_Task_receive',
+		callback: callback
+	};
+}
+
+
+// PROCESSES
+
+function rawSpawn(task)
+{
+	var process = {
+		ctor: '_Process',
+		id: _elm_lang$core$Native_Utils.guid(),
+		root: task,
+		stack: null,
+		mailbox: []
+	};
+
+	enqueue(process);
+
+	return process;
+}
+
+function spawn(task)
+{
+	return nativeBinding(function(callback) {
+		var process = rawSpawn(task);
+		callback(succeed(process));
+	});
+}
+
+function rawSend(process, msg)
+{
+	process.mailbox.push(msg);
+	enqueue(process);
+}
+
+function send(process, msg)
+{
+	return nativeBinding(function(callback) {
+		rawSend(process, msg);
+		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+	});
+}
+
+function kill(process)
+{
+	return nativeBinding(function(callback) {
+		var root = process.root;
+		if (root.ctor === '_Task_nativeBinding' && root.cancel)
+		{
+			root.cancel();
+		}
+
+		process.root = null;
+
+		callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+	});
+}
+
+function sleep(time)
+{
+	return nativeBinding(function(callback) {
+		var id = setTimeout(function() {
+			callback(succeed(_elm_lang$core$Native_Utils.Tuple0));
+		}, time);
+
+		return function() { clearTimeout(id); };
+	});
+}
+
+
+// STEP PROCESSES
+
+function step(numSteps, process)
+{
+	while (numSteps < MAX_STEPS)
+	{
+		var ctor = process.root.ctor;
+
+		if (ctor === '_Task_succeed')
+		{
+			while (process.stack && process.stack.ctor === '_Task_onError')
+			{
+				process.stack = process.stack.rest;
+			}
+			if (process.stack === null)
+			{
+				break;
+			}
+			process.root = process.stack.callback(process.root.value);
+			process.stack = process.stack.rest;
+			++numSteps;
+			continue;
+		}
+
+		if (ctor === '_Task_fail')
+		{
+			while (process.stack && process.stack.ctor === '_Task_andThen')
+			{
+				process.stack = process.stack.rest;
+			}
+			if (process.stack === null)
+			{
+				break;
+			}
+			process.root = process.stack.callback(process.root.value);
+			process.stack = process.stack.rest;
+			++numSteps;
+			continue;
+		}
+
+		if (ctor === '_Task_andThen')
+		{
+			process.stack = {
+				ctor: '_Task_andThen',
+				callback: process.root.callback,
+				rest: process.stack
+			};
+			process.root = process.root.task;
+			++numSteps;
+			continue;
+		}
+
+		if (ctor === '_Task_onError')
+		{
+			process.stack = {
+				ctor: '_Task_onError',
+				callback: process.root.callback,
+				rest: process.stack
+			};
+			process.root = process.root.task;
+			++numSteps;
+			continue;
+		}
+
+		if (ctor === '_Task_nativeBinding')
+		{
+			process.root.cancel = process.root.callback(function(newRoot) {
+				process.root = newRoot;
+				enqueue(process);
+			});
+
+			break;
+		}
+
+		if (ctor === '_Task_receive')
+		{
+			var mailbox = process.mailbox;
+			if (mailbox.length === 0)
+			{
+				break;
+			}
+
+			process.root = process.root.callback(mailbox.shift());
+			++numSteps;
+			continue;
+		}
+
+		throw new Error(ctor);
+	}
+
+	if (numSteps < MAX_STEPS)
+	{
+		return numSteps + 1;
+	}
+	enqueue(process);
+
+	return numSteps;
+}
+
+
+// WORK QUEUE
+
+var working = false;
+var workQueue = [];
+
+function enqueue(process)
+{
+	workQueue.push(process);
+
+	if (!working)
+	{
+		setTimeout(work, 0);
+		working = true;
+	}
+}
+
+function work()
+{
+	var numSteps = 0;
+	var process;
+	while (numSteps < MAX_STEPS && (process = workQueue.shift()))
+	{
+		if (process.root)
+		{
+			numSteps = step(numSteps, process);
+		}
+	}
+	if (!process)
+	{
+		working = false;
+		return;
+	}
+	setTimeout(work, 0);
+}
+
+
+return {
+	succeed: succeed,
+	fail: fail,
+	nativeBinding: nativeBinding,
+	andThen: F2(andThen),
+	onError: F2(onError),
+	receive: receive,
+
+	spawn: spawn,
+	kill: kill,
+	sleep: sleep,
+	send: F2(send),
+
+	rawSpawn: rawSpawn,
+	rawSend: rawSend
+};
+
+}();
 var _elm_lang$core$Platform_Cmd$batch = _elm_lang$core$Native_Platform.batch;
 var _elm_lang$core$Platform_Cmd$none = _elm_lang$core$Platform_Cmd$batch(
 	{ctor: '[]'});
@@ -5748,6 +5756,28 @@ var _elm_lang$core$Platform$Program = {ctor: 'Program'};
 var _elm_lang$core$Platform$Task = {ctor: 'Task'};
 var _elm_lang$core$Platform$ProcessId = {ctor: 'ProcessId'};
 var _elm_lang$core$Platform$Router = {ctor: 'Router'};
+
+var _elm_lang$core$Native_Bitwise = function() {
+
+return {
+	and: F2(function and(a, b) { return a & b; }),
+	or: F2(function or(a, b) { return a | b; }),
+	xor: F2(function xor(a, b) { return a ^ b; }),
+	complement: function complement(a) { return ~a; },
+	shiftLeftBy: F2(function(offset, a) { return a << offset; }),
+	shiftRightBy: F2(function(offset, a) { return a >> offset; }),
+	shiftRightZfBy: F2(function(offset, a) { return a >>> offset; })
+};
+
+}();
+
+var _elm_lang$core$Bitwise$shiftRightZfBy = _elm_lang$core$Native_Bitwise.shiftRightZfBy;
+var _elm_lang$core$Bitwise$shiftRightBy = _elm_lang$core$Native_Bitwise.shiftRightBy;
+var _elm_lang$core$Bitwise$shiftLeftBy = _elm_lang$core$Native_Bitwise.shiftLeftBy;
+var _elm_lang$core$Bitwise$complement = _elm_lang$core$Native_Bitwise.complement;
+var _elm_lang$core$Bitwise$xor = _elm_lang$core$Native_Bitwise.xor;
+var _elm_lang$core$Bitwise$or = _elm_lang$core$Native_Bitwise.or;
+var _elm_lang$core$Bitwise$and = _elm_lang$core$Native_Bitwise.and;
 
 var _elm_lang$core$Task$onError = _elm_lang$core$Native_Scheduler.onError;
 var _elm_lang$core$Task$andThen = _elm_lang$core$Native_Scheduler.andThen;
@@ -5945,33 +5975,6 @@ var _elm_lang$core$Task$cmdMap = F2(
 			A2(_elm_lang$core$Task$map, tagger, _p11._0));
 	});
 _elm_lang$core$Native_Platform.effectManagers['Task'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Task$init, onEffects: _elm_lang$core$Task$onEffects, onSelfMsg: _elm_lang$core$Task$onSelfMsg, tag: 'cmd', cmdMap: _elm_lang$core$Task$cmdMap};
-
-var _elm_lang$core$Tuple$mapSecond = F2(
-	function (func, _p0) {
-		var _p1 = _p0;
-		return {
-			ctor: '_Tuple2',
-			_0: _p1._0,
-			_1: func(_p1._1)
-		};
-	});
-var _elm_lang$core$Tuple$mapFirst = F2(
-	function (func, _p2) {
-		var _p3 = _p2;
-		return {
-			ctor: '_Tuple2',
-			_0: func(_p3._0),
-			_1: _p3._1
-		};
-	});
-var _elm_lang$core$Tuple$second = function (_p4) {
-	var _p5 = _p4;
-	return _p5._1;
-};
-var _elm_lang$core$Tuple$first = function (_p6) {
-	var _p7 = _p6;
-	return _p7._0;
-};
 
 //import Native.Scheduler //
 
@@ -6187,9 +6190,6 @@ var _elm_lang$core$Time$subMap = F2(
 			});
 	});
 _elm_lang$core$Native_Platform.effectManagers['Time'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Time$init, onEffects: _elm_lang$core$Time$onEffects, onSelfMsg: _elm_lang$core$Time$onSelfMsg, tag: 'sub', subMap: _elm_lang$core$Time$subMap};
-
-var _elm_lang$core$Debug$crash = _elm_lang$core$Native_Debug.crash;
-var _elm_lang$core$Debug$log = _elm_lang$core$Native_Debug.log;
 
 var _mgold$elm_random_pcg$Random_Pcg$toJson = function (_p0) {
 	var _p1 = _p0;
@@ -7031,6 +7031,10 @@ var _danyx23$elm_uuid$Uuid$fromString = function (text) {
 			_elm_lang$core$String$toLower(text))) : _elm_lang$core$Maybe$Nothing;
 };
 var _danyx23$elm_uuid$Uuid$uuidGenerator = A2(_mgold$elm_random_pcg$Random_Pcg$map, _danyx23$elm_uuid$Uuid$Uuid, _danyx23$elm_uuid$Uuid_Barebones$uuidStringGenerator);
+
+var _elm_lang$core$Process$kill = _elm_lang$core$Native_Scheduler.kill;
+var _elm_lang$core$Process$sleep = _elm_lang$core$Native_Scheduler.sleep;
+var _elm_lang$core$Process$spawn = _elm_lang$core$Native_Scheduler.spawn;
 
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrap;
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags;
@@ -9535,6 +9539,541 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
+var _elm_lang$websocket$Native_WebSocket = function() {
+
+function open(url, settings)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		try
+		{
+			var socket = new WebSocket(url);
+			socket.elm_web_socket = true;
+		}
+		catch(err)
+		{
+			return callback(_elm_lang$core$Native_Scheduler.fail({
+				ctor: err.name === 'SecurityError' ? 'BadSecurity' : 'BadArgs',
+				_0: err.message
+			}));
+		}
+
+		socket.addEventListener("open", function(event) {
+			callback(_elm_lang$core$Native_Scheduler.succeed(socket));
+		});
+
+		socket.addEventListener("message", function(event) {
+			_elm_lang$core$Native_Scheduler.rawSpawn(A2(settings.onMessage, socket, event.data));
+		});
+
+		socket.addEventListener("close", function(event) {
+			_elm_lang$core$Native_Scheduler.rawSpawn(settings.onClose({
+				code: event.code,
+				reason: event.reason,
+				wasClean: event.wasClean
+			}));
+		});
+
+		return function()
+		{
+			if (socket && socket.close)
+			{
+				socket.close();
+			}
+		};
+	});
+}
+
+function send(socket, string)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback)
+	{
+		var result =
+			socket.readyState === WebSocket.OPEN
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just({ ctor: 'NotOpen' });
+
+		try
+		{
+			socket.send(string);
+		}
+		catch(err)
+		{
+			result = _elm_lang$core$Maybe$Just({ ctor: 'BadString' });
+		}
+
+		callback(_elm_lang$core$Native_Scheduler.succeed(result));
+	});
+}
+
+function close(code, reason, socket)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
+		try
+		{
+			socket.close(code, reason);
+		}
+		catch(err)
+		{
+			return callback(_elm_lang$core$Native_Scheduler.fail(_elm_lang$core$Maybe$Just({
+				ctor: err.name === 'SyntaxError' ? 'BadReason' : 'BadCode'
+			})));
+		}
+		callback(_elm_lang$core$Native_Scheduler.succeed(_elm_lang$core$Maybe$Nothing));
+	});
+}
+
+function bytesQueued(socket)
+{
+	return _elm_lang$core$Native_Scheduler.nativeBinding(function(callback) {
+		callback(_elm_lang$core$Native_Scheduler.succeed(socket.bufferedAmount));
+	});
+}
+
+return {
+	open: F2(open),
+	send: F2(send),
+	close: F3(close),
+	bytesQueued: bytesQueued
+};
+
+}();
+
+var _elm_lang$websocket$WebSocket_LowLevel$bytesQueued = _elm_lang$websocket$Native_WebSocket.bytesQueued;
+var _elm_lang$websocket$WebSocket_LowLevel$send = _elm_lang$websocket$Native_WebSocket.send;
+var _elm_lang$websocket$WebSocket_LowLevel$closeWith = _elm_lang$websocket$Native_WebSocket.close;
+var _elm_lang$websocket$WebSocket_LowLevel$close = function (socket) {
+	return A2(
+		_elm_lang$core$Task$map,
+		_elm_lang$core$Basics$always(
+			{ctor: '_Tuple0'}),
+		A3(_elm_lang$websocket$WebSocket_LowLevel$closeWith, 1000, '', socket));
+};
+var _elm_lang$websocket$WebSocket_LowLevel$open = _elm_lang$websocket$Native_WebSocket.open;
+var _elm_lang$websocket$WebSocket_LowLevel$Settings = F2(
+	function (a, b) {
+		return {onMessage: a, onClose: b};
+	});
+var _elm_lang$websocket$WebSocket_LowLevel$WebSocket = {ctor: 'WebSocket'};
+var _elm_lang$websocket$WebSocket_LowLevel$BadArgs = {ctor: 'BadArgs'};
+var _elm_lang$websocket$WebSocket_LowLevel$BadSecurity = {ctor: 'BadSecurity'};
+var _elm_lang$websocket$WebSocket_LowLevel$BadReason = {ctor: 'BadReason'};
+var _elm_lang$websocket$WebSocket_LowLevel$BadCode = {ctor: 'BadCode'};
+var _elm_lang$websocket$WebSocket_LowLevel$BadString = {ctor: 'BadString'};
+var _elm_lang$websocket$WebSocket_LowLevel$NotOpen = {ctor: 'NotOpen'};
+
+var _elm_lang$websocket$WebSocket$closeConnection = function (connection) {
+	var _p0 = connection;
+	if (_p0.ctor === 'Opening') {
+		return _elm_lang$core$Process$kill(_p0._1);
+	} else {
+		return _elm_lang$websocket$WebSocket_LowLevel$close(_p0._0);
+	}
+};
+var _elm_lang$websocket$WebSocket$after = function (backoff) {
+	return (_elm_lang$core$Native_Utils.cmp(backoff, 1) < 0) ? _elm_lang$core$Task$succeed(
+		{ctor: '_Tuple0'}) : _elm_lang$core$Process$sleep(
+		_elm_lang$core$Basics$toFloat(
+			10 * Math.pow(2, backoff)));
+};
+var _elm_lang$websocket$WebSocket$removeQueue = F2(
+	function (name, state) {
+		return _elm_lang$core$Native_Utils.update(
+			state,
+			{
+				queues: A2(_elm_lang$core$Dict$remove, name, state.queues)
+			});
+	});
+var _elm_lang$websocket$WebSocket$updateSocket = F3(
+	function (name, connection, state) {
+		return _elm_lang$core$Native_Utils.update(
+			state,
+			{
+				sockets: A3(_elm_lang$core$Dict$insert, name, connection, state.sockets)
+			});
+	});
+var _elm_lang$websocket$WebSocket$add = F2(
+	function (value, maybeList) {
+		var _p1 = maybeList;
+		if (_p1.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Just(
+				{
+					ctor: '::',
+					_0: value,
+					_1: {ctor: '[]'}
+				});
+		} else {
+			return _elm_lang$core$Maybe$Just(
+				{ctor: '::', _0: value, _1: _p1._0});
+		}
+	});
+var _elm_lang$websocket$WebSocket$buildSubDict = F2(
+	function (subs, dict) {
+		buildSubDict:
+		while (true) {
+			var _p2 = subs;
+			if (_p2.ctor === '[]') {
+				return dict;
+			} else {
+				if (_p2._0.ctor === 'Listen') {
+					var _v3 = _p2._1,
+						_v4 = A3(
+						_elm_lang$core$Dict$update,
+						_p2._0._0,
+						_elm_lang$websocket$WebSocket$add(_p2._0._1),
+						dict);
+					subs = _v3;
+					dict = _v4;
+					continue buildSubDict;
+				} else {
+					var _v5 = _p2._1,
+						_v6 = A3(
+						_elm_lang$core$Dict$update,
+						_p2._0._0,
+						function (_p3) {
+							return _elm_lang$core$Maybe$Just(
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									{ctor: '[]'},
+									_p3));
+						},
+						dict);
+					subs = _v5;
+					dict = _v6;
+					continue buildSubDict;
+				}
+			}
+		}
+	});
+var _elm_lang$websocket$WebSocket_ops = _elm_lang$websocket$WebSocket_ops || {};
+_elm_lang$websocket$WebSocket_ops['&>'] = F2(
+	function (t1, t2) {
+		return A2(
+			_elm_lang$core$Task$andThen,
+			function (_p4) {
+				return t2;
+			},
+			t1);
+	});
+var _elm_lang$websocket$WebSocket$sendMessagesHelp = F3(
+	function (cmds, socketsDict, queuesDict) {
+		sendMessagesHelp:
+		while (true) {
+			var _p5 = cmds;
+			if (_p5.ctor === '[]') {
+				return _elm_lang$core$Task$succeed(queuesDict);
+			} else {
+				var _p9 = _p5._1;
+				var _p8 = _p5._0._0;
+				var _p7 = _p5._0._1;
+				var _p6 = A2(_elm_lang$core$Dict$get, _p8, socketsDict);
+				if ((_p6.ctor === 'Just') && (_p6._0.ctor === 'Connected')) {
+					return A2(
+						_elm_lang$websocket$WebSocket_ops['&>'],
+						A2(_elm_lang$websocket$WebSocket_LowLevel$send, _p6._0._0, _p7),
+						A3(_elm_lang$websocket$WebSocket$sendMessagesHelp, _p9, socketsDict, queuesDict));
+				} else {
+					var _v9 = _p9,
+						_v10 = socketsDict,
+						_v11 = A3(
+						_elm_lang$core$Dict$update,
+						_p8,
+						_elm_lang$websocket$WebSocket$add(_p7),
+						queuesDict);
+					cmds = _v9;
+					socketsDict = _v10;
+					queuesDict = _v11;
+					continue sendMessagesHelp;
+				}
+			}
+		}
+	});
+var _elm_lang$websocket$WebSocket$subscription = _elm_lang$core$Native_Platform.leaf('WebSocket');
+var _elm_lang$websocket$WebSocket$command = _elm_lang$core$Native_Platform.leaf('WebSocket');
+var _elm_lang$websocket$WebSocket$State = F3(
+	function (a, b, c) {
+		return {sockets: a, queues: b, subs: c};
+	});
+var _elm_lang$websocket$WebSocket$init = _elm_lang$core$Task$succeed(
+	A3(_elm_lang$websocket$WebSocket$State, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty, _elm_lang$core$Dict$empty));
+var _elm_lang$websocket$WebSocket$Send = F2(
+	function (a, b) {
+		return {ctor: 'Send', _0: a, _1: b};
+	});
+var _elm_lang$websocket$WebSocket$send = F2(
+	function (url, message) {
+		return _elm_lang$websocket$WebSocket$command(
+			A2(_elm_lang$websocket$WebSocket$Send, url, message));
+	});
+var _elm_lang$websocket$WebSocket$cmdMap = F2(
+	function (_p11, _p10) {
+		var _p12 = _p10;
+		return A2(_elm_lang$websocket$WebSocket$Send, _p12._0, _p12._1);
+	});
+var _elm_lang$websocket$WebSocket$KeepAlive = function (a) {
+	return {ctor: 'KeepAlive', _0: a};
+};
+var _elm_lang$websocket$WebSocket$keepAlive = function (url) {
+	return _elm_lang$websocket$WebSocket$subscription(
+		_elm_lang$websocket$WebSocket$KeepAlive(url));
+};
+var _elm_lang$websocket$WebSocket$Listen = F2(
+	function (a, b) {
+		return {ctor: 'Listen', _0: a, _1: b};
+	});
+var _elm_lang$websocket$WebSocket$listen = F2(
+	function (url, tagger) {
+		return _elm_lang$websocket$WebSocket$subscription(
+			A2(_elm_lang$websocket$WebSocket$Listen, url, tagger));
+	});
+var _elm_lang$websocket$WebSocket$subMap = F2(
+	function (func, sub) {
+		var _p13 = sub;
+		if (_p13.ctor === 'Listen') {
+			return A2(
+				_elm_lang$websocket$WebSocket$Listen,
+				_p13._0,
+				function (_p14) {
+					return func(
+						_p13._1(_p14));
+				});
+		} else {
+			return _elm_lang$websocket$WebSocket$KeepAlive(_p13._0);
+		}
+	});
+var _elm_lang$websocket$WebSocket$Connected = function (a) {
+	return {ctor: 'Connected', _0: a};
+};
+var _elm_lang$websocket$WebSocket$Opening = F2(
+	function (a, b) {
+		return {ctor: 'Opening', _0: a, _1: b};
+	});
+var _elm_lang$websocket$WebSocket$BadOpen = function (a) {
+	return {ctor: 'BadOpen', _0: a};
+};
+var _elm_lang$websocket$WebSocket$GoodOpen = F2(
+	function (a, b) {
+		return {ctor: 'GoodOpen', _0: a, _1: b};
+	});
+var _elm_lang$websocket$WebSocket$Die = function (a) {
+	return {ctor: 'Die', _0: a};
+};
+var _elm_lang$websocket$WebSocket$Receive = F2(
+	function (a, b) {
+		return {ctor: 'Receive', _0: a, _1: b};
+	});
+var _elm_lang$websocket$WebSocket$open = F2(
+	function (name, router) {
+		return A2(
+			_elm_lang$websocket$WebSocket_LowLevel$open,
+			name,
+			{
+				onMessage: F2(
+					function (_p15, msg) {
+						return A2(
+							_elm_lang$core$Platform$sendToSelf,
+							router,
+							A2(_elm_lang$websocket$WebSocket$Receive, name, msg));
+					}),
+				onClose: function (details) {
+					return A2(
+						_elm_lang$core$Platform$sendToSelf,
+						router,
+						_elm_lang$websocket$WebSocket$Die(name));
+				}
+			});
+	});
+var _elm_lang$websocket$WebSocket$attemptOpen = F3(
+	function (router, backoff, name) {
+		var badOpen = function (_p16) {
+			return A2(
+				_elm_lang$core$Platform$sendToSelf,
+				router,
+				_elm_lang$websocket$WebSocket$BadOpen(name));
+		};
+		var goodOpen = function (ws) {
+			return A2(
+				_elm_lang$core$Platform$sendToSelf,
+				router,
+				A2(_elm_lang$websocket$WebSocket$GoodOpen, name, ws));
+		};
+		var actuallyAttemptOpen = A2(
+			_elm_lang$core$Task$onError,
+			badOpen,
+			A2(
+				_elm_lang$core$Task$andThen,
+				goodOpen,
+				A2(_elm_lang$websocket$WebSocket$open, name, router)));
+		return _elm_lang$core$Process$spawn(
+			A2(
+				_elm_lang$websocket$WebSocket_ops['&>'],
+				_elm_lang$websocket$WebSocket$after(backoff),
+				actuallyAttemptOpen));
+	});
+var _elm_lang$websocket$WebSocket$onEffects = F4(
+	function (router, cmds, subs, state) {
+		var newSubs = A2(_elm_lang$websocket$WebSocket$buildSubDict, subs, _elm_lang$core$Dict$empty);
+		var cleanup = function (newQueues) {
+			var rightStep = F3(
+				function (name, connection, getNewSockets) {
+					return A2(
+						_elm_lang$websocket$WebSocket_ops['&>'],
+						_elm_lang$websocket$WebSocket$closeConnection(connection),
+						getNewSockets);
+				});
+			var bothStep = F4(
+				function (name, _p17, connection, getNewSockets) {
+					return A2(
+						_elm_lang$core$Task$map,
+						A2(_elm_lang$core$Dict$insert, name, connection),
+						getNewSockets);
+				});
+			var leftStep = F3(
+				function (name, _p18, getNewSockets) {
+					return A2(
+						_elm_lang$core$Task$andThen,
+						function (newSockets) {
+							return A2(
+								_elm_lang$core$Task$andThen,
+								function (pid) {
+									return _elm_lang$core$Task$succeed(
+										A3(
+											_elm_lang$core$Dict$insert,
+											name,
+											A2(_elm_lang$websocket$WebSocket$Opening, 0, pid),
+											newSockets));
+								},
+								A3(_elm_lang$websocket$WebSocket$attemptOpen, router, 0, name));
+						},
+						getNewSockets);
+				});
+			var newEntries = A2(
+				_elm_lang$core$Dict$union,
+				newQueues,
+				A2(
+					_elm_lang$core$Dict$map,
+					F2(
+						function (k, v) {
+							return {ctor: '[]'};
+						}),
+					newSubs));
+			var collectNewSockets = A6(
+				_elm_lang$core$Dict$merge,
+				leftStep,
+				bothStep,
+				rightStep,
+				newEntries,
+				state.sockets,
+				_elm_lang$core$Task$succeed(_elm_lang$core$Dict$empty));
+			return A2(
+				_elm_lang$core$Task$andThen,
+				function (newSockets) {
+					return _elm_lang$core$Task$succeed(
+						A3(_elm_lang$websocket$WebSocket$State, newSockets, newQueues, newSubs));
+				},
+				collectNewSockets);
+		};
+		var sendMessagesGetNewQueues = A3(_elm_lang$websocket$WebSocket$sendMessagesHelp, cmds, state.sockets, state.queues);
+		return A2(_elm_lang$core$Task$andThen, cleanup, sendMessagesGetNewQueues);
+	});
+var _elm_lang$websocket$WebSocket$onSelfMsg = F3(
+	function (router, selfMsg, state) {
+		var _p19 = selfMsg;
+		switch (_p19.ctor) {
+			case 'Receive':
+				var sends = A2(
+					_elm_lang$core$List$map,
+					function (tagger) {
+						return A2(
+							_elm_lang$core$Platform$sendToApp,
+							router,
+							tagger(_p19._1));
+					},
+					A2(
+						_elm_lang$core$Maybe$withDefault,
+						{ctor: '[]'},
+						A2(_elm_lang$core$Dict$get, _p19._0, state.subs)));
+				return A2(
+					_elm_lang$websocket$WebSocket_ops['&>'],
+					_elm_lang$core$Task$sequence(sends),
+					_elm_lang$core$Task$succeed(state));
+			case 'Die':
+				var _p21 = _p19._0;
+				var _p20 = A2(_elm_lang$core$Dict$get, _p21, state.sockets);
+				if (_p20.ctor === 'Nothing') {
+					return _elm_lang$core$Task$succeed(state);
+				} else {
+					return A2(
+						_elm_lang$core$Task$andThen,
+						function (pid) {
+							return _elm_lang$core$Task$succeed(
+								A3(
+									_elm_lang$websocket$WebSocket$updateSocket,
+									_p21,
+									A2(_elm_lang$websocket$WebSocket$Opening, 0, pid),
+									state));
+						},
+						A3(_elm_lang$websocket$WebSocket$attemptOpen, router, 0, _p21));
+				}
+			case 'GoodOpen':
+				var _p24 = _p19._1;
+				var _p23 = _p19._0;
+				var _p22 = A2(_elm_lang$core$Dict$get, _p23, state.queues);
+				if (_p22.ctor === 'Nothing') {
+					return _elm_lang$core$Task$succeed(
+						A3(
+							_elm_lang$websocket$WebSocket$updateSocket,
+							_p23,
+							_elm_lang$websocket$WebSocket$Connected(_p24),
+							state));
+				} else {
+					return A3(
+						_elm_lang$core$List$foldl,
+						F2(
+							function (msg, task) {
+								return A2(
+									_elm_lang$websocket$WebSocket_ops['&>'],
+									A2(_elm_lang$websocket$WebSocket_LowLevel$send, _p24, msg),
+									task);
+							}),
+						_elm_lang$core$Task$succeed(
+							A2(
+								_elm_lang$websocket$WebSocket$removeQueue,
+								_p23,
+								A3(
+									_elm_lang$websocket$WebSocket$updateSocket,
+									_p23,
+									_elm_lang$websocket$WebSocket$Connected(_p24),
+									state))),
+						_p22._0);
+				}
+			default:
+				var _p27 = _p19._0;
+				var _p25 = A2(_elm_lang$core$Dict$get, _p27, state.sockets);
+				if (_p25.ctor === 'Nothing') {
+					return _elm_lang$core$Task$succeed(state);
+				} else {
+					if (_p25._0.ctor === 'Opening') {
+						var _p26 = _p25._0._0;
+						return A2(
+							_elm_lang$core$Task$andThen,
+							function (pid) {
+								return _elm_lang$core$Task$succeed(
+									A3(
+										_elm_lang$websocket$WebSocket$updateSocket,
+										_p27,
+										A2(_elm_lang$websocket$WebSocket$Opening, _p26 + 1, pid),
+										state));
+							},
+							A3(_elm_lang$websocket$WebSocket$attemptOpen, router, _p26 + 1, _p27));
+					} else {
+						return _elm_lang$core$Task$succeed(state);
+					}
+				}
+		}
+	});
+_elm_lang$core$Native_Platform.effectManagers['WebSocket'] = {pkg: 'elm-lang/websocket', init: _elm_lang$websocket$WebSocket$init, onEffects: _elm_lang$websocket$WebSocket$onEffects, onSelfMsg: _elm_lang$websocket$WebSocket$onSelfMsg, tag: 'fx', cmdMap: _elm_lang$websocket$WebSocket$cmdMap, subMap: _elm_lang$websocket$WebSocket$subMap};
+
 var _user$project$Types$questionFormats = {
 	ctor: '::',
 	_0: 'Multi choice',
@@ -9546,7 +10085,41 @@ var _user$project$Types$questionFormats = {
 };
 var _user$project$Types$newOption = F2(
 	function (questionId, uuid) {
-		return {id: uuid, text: ''};
+		var _p0 = questionId;
+		if (_p0.ctor === 'Just') {
+			return _elm_lang$core$Maybe$Just(
+				{
+					id: _elm_lang$core$Maybe$Just(uuid),
+					text: ''
+				});
+		} else {
+			return _elm_lang$core$Maybe$Nothing;
+		}
+	});
+var _user$project$Types$Model = function (a) {
+	return function (b) {
+		return function (c) {
+			return function (d) {
+				return function (e) {
+					return function (f) {
+						return function (g) {
+							return function (h) {
+								return function (i) {
+									return function (j) {
+										return {userName: a, title: b, description: c, tabs: d, activeTab: e, questions: f, activeQuestionId: g, uuidSeed: h, serverSocketAddress: i, serverMessages: j};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var _user$project$Types$Survey = F3(
+	function (a, b, c) {
+		return {title: a, description: b, questions: c};
 	});
 var _user$project$Types$Question = F4(
 	function (a, b, c, d) {
@@ -9563,7 +10136,7 @@ var _user$project$Types$newQuestion = F2(
 	function (existingQuestions, uuid) {
 		var newQuestionNumber = _elm_lang$core$List$length(existingQuestions) + 1;
 		return {
-			id: uuid,
+			id: _elm_lang$core$Maybe$Just(uuid),
 			format: _user$project$Types$MultiChoice,
 			prompt: A2(
 				_elm_lang$core$Basics_ops['++'],
@@ -9574,8 +10147,8 @@ var _user$project$Types$newQuestion = F2(
 	});
 var _user$project$Types$OpenEnded = {ctor: 'OpenEnded'};
 var _user$project$Types$parseQuestionFormat = function (format) {
-	var _p0 = format;
-	switch (_p0) {
+	var _p1 = format;
+	switch (_p1) {
 		case 'Open ended':
 			return _user$project$Types$OpenEnded;
 		case 'Multi choice':
@@ -9601,7 +10174,162 @@ var _user$project$Types$OpenAnswer = function (a) {
 	return {ctor: 'OpenAnswer', _0: a};
 };
 
-var _user$project$Survey$questionFormatOption = F2(
+var _user$project$SurveyJson$encodeOption = function (option) {
+	var encodedUuid = function () {
+		var _p0 = option.id;
+		if (_p0.ctor === 'Just') {
+			return _elm_lang$core$Json_Encode$string(
+				_danyx23$elm_uuid$Uuid$toString(_p0._0));
+		} else {
+			return _elm_lang$core$Json_Encode$string('');
+		}
+	}();
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'id', _1: encodedUuid},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'text',
+					_1: _elm_lang$core$Json_Encode$string(option.text)
+				},
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$SurveyJson$encodeQuestion = function (question) {
+	var questionIdEncoder = function () {
+		var _p1 = question.id;
+		if (_p1.ctor === 'Just') {
+			return _elm_lang$core$Json_Encode$string(
+				_danyx23$elm_uuid$Uuid$toString(_p1._0));
+		} else {
+			return _elm_lang$core$Json_Encode$string('');
+		}
+	}();
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'id', _1: questionIdEncoder},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'format',
+					_1: _elm_lang$core$Json_Encode$string(
+						_elm_lang$core$Basics$toString(question.format))
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'prompt',
+						_1: _elm_lang$core$Json_Encode$string(question.prompt)
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'options',
+							_1: _elm_lang$core$Json_Encode$list(
+								A2(_elm_lang$core$List$map, _user$project$SurveyJson$encodeOption, question.options))
+						},
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		});
+};
+var _user$project$SurveyJson$modelEncoder = function (model) {
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'title',
+				_1: _elm_lang$core$Json_Encode$string(model.title)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'description',
+					_1: _elm_lang$core$Json_Encode$string(model.description)
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'questions',
+						_1: _elm_lang$core$Json_Encode$list(
+							A2(_elm_lang$core$List$map, _user$project$SurveyJson$encodeQuestion, model.questions))
+					},
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+};
+var _user$project$SurveyJson$encodeModel = function (model) {
+	return A2(
+		_elm_lang$core$Json_Encode$encode,
+		0,
+		_user$project$SurveyJson$modelEncoder(model));
+};
+var _user$project$SurveyJson$questionFormatFromString = function (format) {
+	var _p2 = format;
+	switch (_p2) {
+		case 'OpenEnded':
+			return _elm_lang$core$Json_Decode$succeed(_user$project$Types$OpenEnded);
+		case 'MultiChoice':
+			return _elm_lang$core$Json_Decode$succeed(_user$project$Types$MultiChoice);
+		case 'NumberRange':
+			return _elm_lang$core$Json_Decode$succeed(_user$project$Types$NumberRange);
+		case 'OrdinalScale':
+			return _elm_lang$core$Json_Decode$succeed(_user$project$Types$OrdinalScale);
+		default:
+			return _elm_lang$core$Json_Decode$fail(format);
+	}
+};
+var _user$project$SurveyJson$uuidFromString = function (uuid) {
+	var _p3 = _danyx23$elm_uuid$Uuid$fromString(uuid);
+	if (_p3.ctor === 'Just') {
+		return _elm_lang$core$Json_Decode$succeed(
+			_elm_lang$core$Maybe$Just(_p3._0));
+	} else {
+		return _elm_lang$core$Json_Decode$fail(uuid);
+	}
+};
+var _user$project$SurveyJson$questionFormatDecoder = A2(_elm_lang$core$Json_Decode$andThen, _user$project$SurveyJson$questionFormatFromString, _elm_lang$core$Json_Decode$string);
+var _user$project$SurveyJson$uuidDecoder = A2(_elm_lang$core$Json_Decode$andThen, _user$project$SurveyJson$uuidFromString, _elm_lang$core$Json_Decode$string);
+var _user$project$SurveyJson$optionDecoder = A3(
+	_elm_lang$core$Json_Decode$map2,
+	_user$project$Types$Option,
+	A2(_elm_lang$core$Json_Decode$field, 'id', _user$project$SurveyJson$uuidDecoder),
+	A2(_elm_lang$core$Json_Decode$field, 'text', _elm_lang$core$Json_Decode$string));
+var _user$project$SurveyJson$questionDecoder = A5(
+	_elm_lang$core$Json_Decode$map4,
+	_user$project$Types$Question,
+	A2(_elm_lang$core$Json_Decode$field, 'id', _user$project$SurveyJson$uuidDecoder),
+	A2(_elm_lang$core$Json_Decode$field, 'format', _user$project$SurveyJson$questionFormatDecoder),
+	A2(_elm_lang$core$Json_Decode$field, 'prompt', _elm_lang$core$Json_Decode$string),
+	A2(
+		_elm_lang$core$Json_Decode$field,
+		'options',
+		_elm_lang$core$Json_Decode$list(_user$project$SurveyJson$optionDecoder)));
+var _user$project$SurveyJson$surveyDecoder = A4(
+	_elm_lang$core$Json_Decode$map3,
+	_user$project$Types$Survey,
+	A2(_elm_lang$core$Json_Decode$field, 'title', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode$field, 'description', _elm_lang$core$Json_Decode$string),
+	A2(
+		_elm_lang$core$Json_Decode$field,
+		'questions',
+		_elm_lang$core$Json_Decode$list(_user$project$SurveyJson$questionDecoder)));
+var _user$project$SurveyJson$decodeSurvey = _elm_lang$core$Json_Decode$decodeString(_user$project$SurveyJson$surveyDecoder);
+
+var _user$project$Surveyor$questionFormatOption = F2(
 	function (question, format) {
 		return A2(
 			_elm_lang$html$Html$option,
@@ -9623,10 +10351,219 @@ var _user$project$Survey$questionFormatOption = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$Survey$subscriptions = function (model) {
-	return _elm_lang$core$Platform_Sub$none;
+var _user$project$Surveyor$navBar = function (model) {
+	return A2(
+		_elm_lang$html$Html$nav,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('nav has-shadow'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('container'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('nav-left'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$a,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('nav-item'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$i,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('fa fa-arrow-left'),
+											_1: {
+												ctor: '::',
+												_0: A2(_elm_lang$html$Html_Attributes$attribute, 'aria-hidden', 'true'),
+												_1: {ctor: '[]'}
+											}
+										},
+										{ctor: '[]'}),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$a,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('nav-item is-tab is-hidden-mobile is-active'),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Home'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$a,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('nav-item is-tab is-hidden-mobile'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('About'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}
+							}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$span,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('nav-toggle'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$span,
+									{ctor: '[]'},
+									{ctor: '[]'}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$span,
+										{ctor: '[]'},
+										{ctor: '[]'}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$span,
+											{ctor: '[]'},
+											{ctor: '[]'}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('nav-right nav-menu'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$a,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('nav-item is-tab is-hidden-tablet is-active'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('Home'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$a,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$class('nav-item is-tab is-hidden-tablet'),
+												_1: {ctor: '[]'}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('Features'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$class('nav-item is-tab is-hidden-tablet'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('About'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$a,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$class('nav-item is-tab'),
+														_1: {ctor: '[]'}
+													},
+													{
+														ctor: '::',
+														_0: A2(
+															_elm_lang$html$Html$i,
+															{
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$class('fa fa-eye fa-2x'),
+																_1: {
+																	ctor: '::',
+																	_0: A2(_elm_lang$html$Html_Attributes$attribute, 'aria-hidden', 'true'),
+																	_1: {ctor: '[]'}
+																}
+															},
+															{ctor: '[]'}),
+														_1: {ctor: '[]'}
+													}),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}),
+							_1: {ctor: '[]'}
+						}
+					}
+				}),
+			_1: {ctor: '[]'}
+		});
 };
-var _user$project$Survey$removeOption = F3(
+var _user$project$Surveyor$viewServerMessage = function (message) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text(message),
+			_1: {ctor: '[]'}
+		});
+};
+var _user$project$Surveyor$removeOption = F3(
 	function (removedFromQuestion, option, question) {
 		return _elm_lang$core$Native_Utils.eq(question, removedFromQuestion) ? _elm_lang$core$Native_Utils.update(
 			question,
@@ -9640,7 +10577,7 @@ var _user$project$Survey$removeOption = F3(
 					question.options)
 			}) : question;
 	});
-var _user$project$Survey$editOption = F4(
+var _user$project$Surveyor$editOption = F4(
 	function (editedQuestion, editedOption, newText, question) {
 		var editOptionInQuestion = function (option) {
 			return _elm_lang$core$Native_Utils.eq(option.id, editedOption.id) ? _elm_lang$core$Native_Utils.update(
@@ -9653,7 +10590,7 @@ var _user$project$Survey$editOption = F4(
 				options: A2(_elm_lang$core$List$map, editOptionInQuestion, question.options)
 			}) : question;
 	});
-var _user$project$Survey$addOption = F3(
+var _user$project$Surveyor$addOption = F3(
 	function (option, addedOnQuestion, question) {
 		return _elm_lang$core$Native_Utils.eq(question, addedOnQuestion) ? _elm_lang$core$Native_Utils.update(
 			question,
@@ -9668,13 +10605,13 @@ var _user$project$Survey$addOption = F3(
 					})
 			}) : question;
 	});
-var _user$project$Survey$editPrompt = F3(
+var _user$project$Surveyor$editPrompt = F3(
 	function (editedQuestion, newPrompt, question) {
 		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
 			question,
 			{prompt: newPrompt}) : question;
 	});
-var _user$project$Survey$editFormat = F3(
+var _user$project$Surveyor$editFormat = F3(
 	function (editedQuestion, newFormat, question) {
 		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
 			question,
@@ -9682,78 +10619,118 @@ var _user$project$Survey$editFormat = F3(
 				format: _user$project$Types$parseQuestionFormat(newFormat)
 			}) : question;
 	});
-var _user$project$Survey$init = function () {
-	var _p0 = A2(
+var _user$project$Surveyor$sendToServer = function (model) {
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		model,
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$websocket$WebSocket$send,
+				A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
+				_user$project$SurveyJson$encodeModel(model)),
+			_1: {ctor: '[]'}
+		});
+};
+var _user$project$Surveyor$register = function (model) {
+	var msg = A2(_elm_lang$core$Basics_ops['++'], 'register as ', model.userName);
+	return A2(
+		_elm_lang$websocket$WebSocket$send,
+		A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
+		msg);
+};
+var _user$project$Surveyor$receiveFromServer = F2(
+	function (model, message) {
+		var _p0 = _user$project$SurveyJson$decodeSurvey(message);
+		if (_p0.ctor === 'Ok') {
+			var _p1 = _p0._0;
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{
+					title: _p1.title,
+					description: _p1.description,
+					questions: _p1.questions,
+					serverMessages: {ctor: '::', _0: message, _1: model.serverMessages}
+				});
+		} else {
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{
+					serverMessages: {ctor: '::', _0: message, _1: model.serverMessages}
+				});
+		}
+	});
+var _user$project$Surveyor$init = function () {
+	var _p2 = A2(
 		_mgold$elm_random_pcg$Random_Pcg$step,
 		_danyx23$elm_uuid$Uuid$uuidGenerator,
 		_mgold$elm_random_pcg$Random_Pcg$initialSeed(291892861));
-	var uuid = _p0._0;
-	var seed = _p0._1;
+	var uuid = _p2._0;
+	var seed = _p2._1;
+	var initialModel = {
+		userName: 'foo',
+		title: '',
+		description: '',
+		tabs: {
+			ctor: '::',
+			_0: 'questions',
+			_1: {
+				ctor: '::',
+				_0: 'answers',
+				_1: {ctor: '[]'}
+			}
+		},
+		activeTab: 'questions',
+		questions: {
+			ctor: '::',
+			_0: A2(
+				_user$project$Types$newQuestion,
+				{ctor: '[]'},
+				uuid),
+			_1: {ctor: '[]'}
+		},
+		activeQuestionId: _elm_lang$core$Maybe$Nothing,
+		uuidSeed: seed,
+		serverSocketAddress: '0.0.0.0:8000',
+		serverMessages: {ctor: '[]'}
+	};
 	return {
 		ctor: '_Tuple2',
-		_0: {
-			title: '',
-			description: '',
-			tabs: {
-				ctor: '::',
-				_0: 'questions',
-				_1: {
-					ctor: '::',
-					_0: 'answers',
-					_1: {ctor: '[]'}
-				}
-			},
-			activeTab: 'questions',
-			questions: {
-				ctor: '::',
-				_0: A2(
-					_user$project$Types$newQuestion,
-					{ctor: '[]'},
-					uuid),
-				_1: {ctor: '[]'}
-			},
-			activeQuestionId: _elm_lang$core$Maybe$Nothing,
-			uuidSeed: seed
-		},
-		_1: _elm_lang$core$Platform_Cmd$none
+		_0: initialModel,
+		_1: _user$project$Surveyor$register(initialModel)
 	};
 }();
-var _user$project$Survey$selectOptionText = _elm_lang$core$Native_Platform.outgoingPort(
+var _user$project$Surveyor$selectOptionText = _elm_lang$core$Native_Platform.outgoingPort(
 	'selectOptionText',
 	function (v) {
 		return v;
 	});
-var _user$project$Survey$update = F2(
+var _user$project$Surveyor$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'TabClicked':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{activeTab: _p1._0}),
+						{activeTab: _p3._0}),
 					{ctor: '[]'});
 			case 'TitleEdited':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{title: _p1._0}),
-					{ctor: '[]'});
+						{title: _p3._0}));
 			case 'DescriptionEdited':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{description: _p1._0}),
-					{ctor: '[]'});
+						{description: _p3._0}));
 			case 'QuestionAdded':
-				var _p2 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
-				var newUuid = _p2._0;
-				var newSeed = _p2._1;
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				var _p4 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
+				var newUuid = _p4._0;
+				var newSeed = _p4._1;
+				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
@@ -9766,93 +10743,113 @@ var _user$project$Survey$update = F2(
 									_0: A2(_user$project$Types$newQuestion, model.questions, newUuid),
 									_1: {ctor: '[]'}
 								})
-						}),
-					{ctor: '[]'});
+						}));
 			case 'QuestionClicked':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							activeQuestionId: _elm_lang$core$Maybe$Just(_p1._0)
-						}),
-					{ctor: '[]'});
+				var _p5 = _p3._0;
+				if (_p5.ctor === 'Just') {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								activeQuestionId: _elm_lang$core$Maybe$Just(_p5._0)
+							}),
+						{ctor: '[]'});
+				} else {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{activeQuestionId: _elm_lang$core$Maybe$Nothing}),
+						{ctor: '[]'});
+				}
 			case 'FormatSelected':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
 							questions: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Survey$editFormat, _p1._0, _p1._1),
+								A2(_user$project$Surveyor$editFormat, _p3._0, _p3._1),
 								model.questions)
-						}),
-					{ctor: '[]'});
+						}));
 			case 'PromptEdited':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
 							questions: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Survey$editPrompt, _p1._0, _p1._1),
+								A2(_user$project$Surveyor$editPrompt, _p3._0, _p3._1),
 								model.questions)
-						}),
-					{ctor: '[]'});
+						}));
 			case 'OptionAdded':
-				var _p4 = _p1._0;
-				var _p3 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
-				var newUuid = _p3._0;
-				var newSeed = _p3._1;
-				var option = A2(_user$project$Types$newOption, _p4.id, newUuid);
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
-					_elm_lang$core$Native_Utils.update(
+				var _p8 = _p3._0;
+				var _p6 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
+				var newUuid = _p6._0;
+				var newSeed = _p6._1;
+				var option = A2(_user$project$Types$newOption, _p8.id, newUuid);
+				var _p7 = option;
+				if (_p7.ctor === 'Just') {
+					return _user$project$Surveyor$sendToServer(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								uuidSeed: newSeed,
+								questions: A2(
+									_elm_lang$core$List$map,
+									A2(_user$project$Surveyor$addOption, _p7._0, _p8),
+									model.questions)
+							}));
+				} else {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
 						model,
-						{
-							uuidSeed: newSeed,
-							questions: A2(
-								_elm_lang$core$List$map,
-								A2(_user$project$Survey$addOption, option, _p4),
-								model.questions)
-						}),
-					{ctor: '[]'});
+						{ctor: '[]'});
+				}
 			case 'OptionEdited':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
 							questions: A2(
 								_elm_lang$core$List$map,
-								A3(_user$project$Survey$editOption, _p1._0, _p1._1, _p1._2),
+								A3(_user$project$Surveyor$editOption, _p3._0, _p3._1, _p3._2),
 								model.questions)
-						}),
-					{ctor: '[]'});
+						}));
 			case 'OptionRemoved':
-				return A2(
-					_elm_lang$core$Platform_Cmd_ops['!'],
+				return _user$project$Surveyor$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
 							questions: A2(
 								_elm_lang$core$List$map,
-								A2(_user$project$Survey$removeOption, _p1._0, _p1._1),
+								A2(_user$project$Surveyor$removeOption, _p3._0, _p3._1),
 								model.questions)
-						}),
-					{ctor: '[]'});
+						}));
 			case 'SelectOptionText':
+				var _p9 = _p3._0.id;
+				if (_p9.ctor === 'Just') {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						model,
+						{
+							ctor: '::',
+							_0: _user$project$Surveyor$selectOptionText(
+								_danyx23$elm_uuid$Uuid$toString(_p9._0)),
+							_1: {ctor: '[]'}
+						});
+				} else {
+					return A2(
+						_elm_lang$core$Platform_Cmd_ops['!'],
+						model,
+						{ctor: '[]'});
+				}
+			case 'ReceiveMessage':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
-					model,
-					{
-						ctor: '::',
-						_0: _user$project$Survey$selectOptionText(
-							_danyx23$elm_uuid$Uuid$toString(_p1._0.id)),
-						_1: {ctor: '[]'}
-					});
+					A2(_user$project$Surveyor$receiveFromServer, model, _p3._0),
+					{ctor: '[]'});
 			default:
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
@@ -9860,24 +10857,37 @@ var _user$project$Survey$update = F2(
 					{ctor: '[]'});
 		}
 	});
-var _user$project$Survey$Model = F7(
-	function (a, b, c, d, e, f, g) {
-		return {title: a, description: b, tabs: c, activeTab: d, questions: e, activeQuestionId: f, uuidSeed: g};
-	});
-var _user$project$Survey$NoOp = {ctor: 'NoOp'};
-var _user$project$Survey$SelectOptionText = function (a) {
+var _user$project$Surveyor$NoOp = {ctor: 'NoOp'};
+var _user$project$Surveyor$ReceiveMessage = function (a) {
+	return {ctor: 'ReceiveMessage', _0: a};
+};
+var _user$project$Surveyor$subscriptions = function (model) {
+	return A2(
+		_elm_lang$websocket$WebSocket$listen,
+		A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
+		_user$project$Surveyor$ReceiveMessage);
+};
+var _user$project$Surveyor$SelectOptionText = function (a) {
 	return {ctor: 'SelectOptionText', _0: a};
 };
-var _user$project$Survey$OptionRemoved = F2(
+var _user$project$Surveyor$OptionRemoved = F2(
 	function (a, b) {
 		return {ctor: 'OptionRemoved', _0: a, _1: b};
 	});
-var _user$project$Survey$OptionEdited = F3(
+var _user$project$Surveyor$OptionEdited = F3(
 	function (a, b, c) {
 		return {ctor: 'OptionEdited', _0: a, _1: b, _2: c};
 	});
-var _user$project$Survey$viewOption = F2(
+var _user$project$Surveyor$viewOption = F2(
 	function (question, option) {
+		var uuid = function () {
+			var _p10 = option.id;
+			if (_p10.ctor === 'Just') {
+				return _danyx23$elm_uuid$Uuid$toString(_p10._0);
+			} else {
+				return '';
+			}
+		}();
 		return A2(
 			_elm_lang$html$Html$div,
 			{
@@ -9907,8 +10917,12 @@ var _user$project$Survey$viewOption = F2(
 										_elm_lang$core$Basics$toString(question.id)),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(_user$project$Survey$NoOp),
-										_1: {ctor: '[]'}
+										_0: _elm_lang$html$Html_Events$onClick(_user$project$Surveyor$NoOp),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$disabled(true),
+											_1: {ctor: '[]'}
+										}
 									}
 								}
 							},
@@ -9930,8 +10944,7 @@ var _user$project$Survey$viewOption = F2(
 								_elm_lang$html$Html$input,
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$id(
-										_danyx23$elm_uuid$Uuid$toString(option.id)),
+									_0: _elm_lang$html$Html_Attributes$id(uuid),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Attributes$class('input is-small is-borderless'),
@@ -9944,11 +10957,11 @@ var _user$project$Survey$viewOption = F2(
 												_1: {
 													ctor: '::',
 													_0: _elm_lang$html$Html_Events$onInput(
-														A2(_user$project$Survey$OptionEdited, question, option)),
+														A2(_user$project$Surveyor$OptionEdited, question, option)),
 													_1: {
 														ctor: '::',
 														_0: _elm_lang$html$Html_Events$onFocus(
-															_user$project$Survey$SelectOptionText(option)),
+															_user$project$Surveyor$SelectOptionText(option)),
 														_1: {ctor: '[]'}
 													}
 												}
@@ -9978,7 +10991,7 @@ var _user$project$Survey$viewOption = F2(
 										_1: {
 											ctor: '::',
 											_0: _elm_lang$html$Html_Events$onClick(
-												A2(_user$project$Survey$OptionRemoved, question, option)),
+												A2(_user$project$Surveyor$OptionRemoved, question, option)),
 											_1: {ctor: '[]'}
 										}
 									},
@@ -9994,10 +11007,10 @@ var _user$project$Survey$viewOption = F2(
 				}
 			});
 	});
-var _user$project$Survey$OptionAdded = function (a) {
+var _user$project$Surveyor$OptionAdded = function (a) {
 	return {ctor: 'OptionAdded', _0: a};
 };
-var _user$project$Survey$addOptionRadio = function (question) {
+var _user$project$Surveyor$addOptionRadio = function (question) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -10027,7 +11040,7 @@ var _user$project$Survey$addOptionRadio = function (question) {
 								_1: {
 									ctor: '::',
 									_0: _elm_lang$html$Html_Events$onClick(
-										_user$project$Survey$OptionAdded(question)),
+										_user$project$Surveyor$OptionAdded(question)),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Attributes$disabled(true),
@@ -10061,7 +11074,7 @@ var _user$project$Survey$addOptionRadio = function (question) {
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Events$onFocus(
-											_user$project$Survey$OptionAdded(question)),
+											_user$project$Surveyor$OptionAdded(question)),
 										_1: {ctor: '[]'}
 									}
 								}
@@ -10073,7 +11086,7 @@ var _user$project$Survey$addOptionRadio = function (question) {
 			}
 		});
 };
-var _user$project$Survey$multiChoiceOptions = function (question) {
+var _user$project$Surveyor$multiChoiceOptions = function (question) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -10085,19 +11098,19 @@ var _user$project$Survey$multiChoiceOptions = function (question) {
 			_elm_lang$core$Basics_ops['++'],
 			A2(
 				_elm_lang$core$List$map,
-				_user$project$Survey$viewOption(question),
+				_user$project$Surveyor$viewOption(question),
 				question.options),
 			{
 				ctor: '::',
-				_0: _user$project$Survey$addOptionRadio(question),
+				_0: _user$project$Surveyor$addOptionRadio(question),
 				_1: {ctor: '[]'}
 			}));
 };
-var _user$project$Survey$PromptEdited = F2(
+var _user$project$Surveyor$PromptEdited = F2(
 	function (a, b) {
 		return {ctor: 'PromptEdited', _0: a, _1: b};
 	});
-var _user$project$Survey$questionPrompt = function (question) {
+var _user$project$Surveyor$questionPrompt = function (question) {
 	return A2(
 		_elm_lang$html$Html$input,
 		{
@@ -10109,18 +11122,18 @@ var _user$project$Survey$questionPrompt = function (question) {
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Events$onInput(
-						_user$project$Survey$PromptEdited(question)),
+						_user$project$Surveyor$PromptEdited(question)),
 					_1: {ctor: '[]'}
 				}
 			}
 		},
 		{ctor: '[]'});
 };
-var _user$project$Survey$FormatSelected = F2(
+var _user$project$Surveyor$FormatSelected = F2(
 	function (a, b) {
 		return {ctor: 'FormatSelected', _0: a, _1: b};
 	});
-var _user$project$Survey$questionFormatSelect = function (question) {
+var _user$project$Surveyor$questionFormatSelect = function (question) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -10157,13 +11170,13 @@ var _user$project$Survey$questionFormatSelect = function (question) {
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Events$onInput(
-											_user$project$Survey$FormatSelected(question)),
+											_user$project$Surveyor$FormatSelected(question)),
 										_1: {ctor: '[]'}
 									}
 								},
 								A2(
 									_elm_lang$core$List$map,
-									_user$project$Survey$questionFormatOption(question),
+									_user$project$Surveyor$questionFormatOption(question),
 									_user$project$Types$questionFormats)),
 							_1: {ctor: '[]'}
 						}),
@@ -10172,15 +11185,15 @@ var _user$project$Survey$questionFormatSelect = function (question) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Survey$QuestionClicked = function (a) {
+var _user$project$Surveyor$QuestionClicked = function (a) {
 	return {ctor: 'QuestionClicked', _0: a};
 };
-var _user$project$Survey$editableQuestion = F3(
+var _user$project$Surveyor$editableQuestion = F3(
 	function (model, question, elements) {
 		var activeClass = function () {
-			var _p5 = model.activeQuestionId;
-			if (_p5.ctor === 'Just') {
-				return _elm_lang$core$Native_Utils.eq(question.id, _p5._0) ? ' raised red' : '';
+			var _p11 = {ctor: '_Tuple2', _0: model.activeQuestionId, _1: question.id};
+			if (((_p11.ctor === '_Tuple2') && (_p11._0.ctor === 'Just')) && (_p11._1.ctor === 'Just')) {
+				return _elm_lang$core$Native_Utils.eq(_p11._1._0, _p11._0._0) ? '  is-active' : '';
 			} else {
 				return '';
 			}
@@ -10194,7 +11207,7 @@ var _user$project$Survey$editableQuestion = F3(
 				_1: {
 					ctor: '::',
 					_0: _elm_lang$html$Html_Events$onClick(
-						_user$project$Survey$QuestionClicked(question.id)),
+						_user$project$Surveyor$QuestionClicked(question.id)),
 					_1: {ctor: '[]'}
 				}
 			},
@@ -10220,7 +11233,7 @@ var _user$project$Survey$editableQuestion = F3(
 								_elm_lang$core$Basics_ops['++'],
 								{
 									ctor: '::',
-									_0: _user$project$Survey$questionPrompt(question),
+									_0: _user$project$Surveyor$questionPrompt(question),
 									_1: {ctor: '[]'}
 								},
 								elements)),
@@ -10235,7 +11248,7 @@ var _user$project$Survey$editableQuestion = F3(
 								},
 								{
 									ctor: '::',
-									_0: _user$project$Survey$questionFormatSelect(question),
+									_0: _user$project$Surveyor$questionFormatSelect(question),
 									_1: {ctor: '[]'}
 								}),
 							_1: {ctor: '[]'}
@@ -10244,11 +11257,11 @@ var _user$project$Survey$editableQuestion = F3(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$Survey$viewQuestion = F2(
+var _user$project$Surveyor$viewQuestion = F2(
 	function (model, question) {
 		var options = function () {
-			var _p6 = question.format;
-			switch (_p6.ctor) {
+			var _p12 = question.format;
+			switch (_p12.ctor) {
 				case 'OpenEnded':
 					return {
 						ctor: '::',
@@ -10265,17 +11278,17 @@ var _user$project$Survey$viewQuestion = F2(
 				case 'MultiChoice':
 					return {
 						ctor: '::',
-						_0: _user$project$Survey$multiChoiceOptions(question),
+						_0: _user$project$Surveyor$multiChoiceOptions(question),
 						_1: {ctor: '[]'}
 					};
 				default:
 					return {ctor: '[]'};
 			}
 		}();
-		return A3(_user$project$Survey$editableQuestion, model, question, options);
+		return A3(_user$project$Surveyor$editableQuestion, model, question, options);
 	});
-var _user$project$Survey$QuestionAdded = {ctor: 'QuestionAdded'};
-var _user$project$Survey$addQuestionButton = function (model) {
+var _user$project$Surveyor$QuestionAdded = {ctor: 'QuestionAdded'};
+var _user$project$Surveyor$addQuestionButton = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -10283,7 +11296,7 @@ var _user$project$Survey$addQuestionButton = function (model) {
 			_0: _elm_lang$html$Html_Attributes$class('ui bottom attached button is-primary'),
 			_1: {
 				ctor: '::',
-				_0: _elm_lang$html$Html_Events$onClick(_user$project$Survey$QuestionAdded),
+				_0: _elm_lang$html$Html_Events$onClick(_user$project$Surveyor$QuestionAdded),
 				_1: {ctor: '[]'}
 			}
 		},
@@ -10293,19 +11306,23 @@ var _user$project$Survey$addQuestionButton = function (model) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Survey$surveySection = function (model) {
+var _user$project$Surveyor$surveySection = function (model) {
 	return _elm_lang$core$Native_Utils.eq(model.activeTab, 'questions') ? A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('section'),
+			_1: {ctor: '[]'}
+		},
 		A2(
 			_elm_lang$core$Basics_ops['++'],
 			A2(
 				_elm_lang$core$List$map,
-				_user$project$Survey$viewQuestion(model),
+				_user$project$Surveyor$viewQuestion(model),
 				model.questions),
 			{
 				ctor: '::',
-				_0: _user$project$Survey$addQuestionButton(model),
+				_0: _user$project$Surveyor$addQuestionButton(model),
 				_1: {ctor: '[]'}
 			})) : A2(
 		_elm_lang$html$Html$div,
@@ -10320,13 +11337,13 @@ var _user$project$Survey$surveySection = function (model) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Survey$DescriptionEdited = function (a) {
+var _user$project$Surveyor$DescriptionEdited = function (a) {
 	return {ctor: 'DescriptionEdited', _0: a};
 };
-var _user$project$Survey$TitleEdited = function (a) {
+var _user$project$Surveyor$TitleEdited = function (a) {
 	return {ctor: 'TitleEdited', _0: a};
 };
-var _user$project$Survey$titleAndDescription = function (model) {
+var _user$project$Surveyor$titleAndDescription = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -10355,7 +11372,7 @@ var _user$project$Survey$titleAndDescription = function (model) {
 									_0: _elm_lang$html$Html_Attributes$autofocus(true),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$TitleEdited),
+										_0: _elm_lang$html$Html_Events$onInput(_user$project$Surveyor$TitleEdited),
 										_1: {ctor: '[]'}
 									}
 								}
@@ -10382,7 +11399,7 @@ var _user$project$Survey$titleAndDescription = function (model) {
 									_0: _elm_lang$html$Html_Attributes$placeholder('Form description'),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onInput(_user$project$Survey$DescriptionEdited),
+										_0: _elm_lang$html$Html_Events$onInput(_user$project$Surveyor$DescriptionEdited),
 										_1: {ctor: '[]'}
 									}
 								}
@@ -10394,10 +11411,10 @@ var _user$project$Survey$titleAndDescription = function (model) {
 			}
 		});
 };
-var _user$project$Survey$TabClicked = function (a) {
+var _user$project$Surveyor$TabClicked = function (a) {
 	return {ctor: 'TabClicked', _0: a};
 };
-var _user$project$Survey$tabMenuItem = F2(
+var _user$project$Surveyor$tabMenuItem = F2(
 	function (model, tab) {
 		var activeClass = _elm_lang$core$Native_Utils.eq(tab, model.activeTab) ? 'is-active' : '';
 		return A2(
@@ -10414,7 +11431,7 @@ var _user$project$Survey$tabMenuItem = F2(
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Events$onClick(
-							_user$project$Survey$TabClicked(tab)),
+							_user$project$Surveyor$TabClicked(tab)),
 						_1: {ctor: '[]'}
 					},
 					{
@@ -10425,7 +11442,7 @@ var _user$project$Survey$tabMenuItem = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$Survey$tabMenu = function (model) {
+var _user$project$Surveyor$tabMenu = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -10440,12 +11457,12 @@ var _user$project$Survey$tabMenu = function (model) {
 				{ctor: '[]'},
 				A2(
 					_elm_lang$core$List$map,
-					_user$project$Survey$tabMenuItem(model),
+					_user$project$Surveyor$tabMenuItem(model),
 					model.tabs)),
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Survey$view = function (model) {
+var _user$project$Surveyor$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -10455,18 +11472,7 @@ var _user$project$Survey$view = function (model) {
 		},
 		{
 			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$div,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('nav'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$id('main-menu'),
-						_1: {ctor: '[]'}
-					}
-				},
-				{ctor: '[]'}),
+			_0: _user$project$Surveyor$navBar(model),
 			_1: {
 				ctor: '::',
 				_0: A2(
@@ -10474,23 +11480,23 @@ var _user$project$Survey$view = function (model) {
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Attributes$class('section'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('container'),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _user$project$Survey$tabMenu(model),
-								_1: {ctor: '[]'}
-							}),
 						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$id('server-messages'),
+							_1: {ctor: '[]'}
+						}
+					},
+					A2(_elm_lang$core$List$map, _user$project$Surveyor$viewServerMessage, model.serverMessages)),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('section'),
+							_1: {ctor: '[]'}
+						},
+						{
 							ctor: '::',
 							_0: A2(
 								_elm_lang$html$Html$div,
@@ -10501,23 +11507,38 @@ var _user$project$Survey$view = function (model) {
 								},
 								{
 									ctor: '::',
-									_0: _user$project$Survey$titleAndDescription(model),
-									_1: {
-										ctor: '::',
-										_0: _user$project$Survey$surveySection(model),
-										_1: {ctor: '[]'}
-									}
+									_0: _user$project$Surveyor$tabMenu(model),
+									_1: {ctor: '[]'}
 								}),
-							_1: {ctor: '[]'}
-						}
-					}),
-				_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('container'),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _user$project$Surveyor$titleAndDescription(model),
+										_1: {
+											ctor: '::',
+											_0: _user$project$Surveyor$surveySection(model),
+											_1: {ctor: '[]'}
+										}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {ctor: '[]'}
+				}
 			}
 		});
 };
 
 var _user$project$Main$main = _elm_lang$html$Html$program(
-	{init: _user$project$Survey$init, view: _user$project$Survey$view, update: _user$project$Survey$update, subscriptions: _user$project$Survey$subscriptions})();
+	{init: _user$project$Surveyor$init, view: _user$project$Surveyor$view, update: _user$project$Surveyor$update, subscriptions: _user$project$Surveyor$subscriptions})();
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};

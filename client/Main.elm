@@ -1,7 +1,8 @@
 module Main exposing (..)
 
 import Html exposing (program)
-import Survey exposing (Model, Msg, init, view, update, subscriptions)
+import Surveyor exposing (Msg, init, view, update, subscriptions)
+import Types exposing (Model)
 
 
 main : Program Never Model Msg

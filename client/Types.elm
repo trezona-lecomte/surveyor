@@ -1,23 +1,41 @@
 module Types exposing (..)
 
 import Dict exposing (Dict)
+import Random.Pcg as Pcg
 import Uuid exposing (Uuid)
 
 
-type alias Tab =
-    String
+type alias Model =
+    { userName : String
+    , title : String
+    , description : String
+    , tabs : List Tab
+    , activeTab : Tab
+    , questions : List Question
+    , activeQuestionId : Maybe QuestionId
+    , uuidSeed : Pcg.Seed
+    , serverSocketAddress : String
+    , serverMessages : List String
+    }
 
 
-type alias QuestionId =
-    Uuid
+type alias Survey =
+    { title : String
+    , description : String
+    , questions : List Question
+    }
 
 
 type alias Question =
-    { id : QuestionId
+    { id : Maybe QuestionId
     , format : QuestionFormat
     , prompt : String
     , options : List Option
     }
+
+
+type alias QuestionId =
+    Uuid
 
 
 type QuestionFormat
@@ -28,9 +46,13 @@ type QuestionFormat
 
 
 type alias Option =
-    { id : Uuid
+    { id : Maybe OptionId
     , text : String
     }
+
+
+type alias OptionId =
+    Uuid
 
 
 type Answer
@@ -40,24 +62,34 @@ type Answer
     | OrdinalAnswer (Dict Int String)
 
 
+type alias Tab =
+    String
+
+
 newQuestion : List Question -> Uuid -> Question
 newQuestion existingQuestions uuid =
     let
         newQuestionNumber =
             List.length existingQuestions + 1
     in
-        { id = uuid
+        { id = Just uuid
         , format = MultiChoice
         , prompt = "Untitled Question " ++ (toString newQuestionNumber)
         , options = []
         }
 
 
-newOption : QuestionId -> Uuid -> Option
+newOption : Maybe QuestionId -> Uuid -> Maybe Option
 newOption questionId uuid =
-    { id = uuid
-    , text = ""
-    }
+    case questionId of
+        Just id ->
+            Just
+                { id = Just uuid
+                , text = ""
+                }
+
+        Nothing ->
+            Nothing
 
 
 questionFormats : List String

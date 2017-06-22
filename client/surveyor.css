@@ -1,7 +1,7 @@
 /* $pink: #ffb3b3 */
 /* $pink-invert: #fff */
 /* $family-serif: "Merriweather", "Georgia", serif */
-/* $primary: $purple */
+/* $info: $blue */
 /* $primary-invert: $pink-invert */
 /* // Use the existing orange as the danger color */
 /* $danger: $orange */
@@ -18,6 +18,9 @@
 
 div .is-slightly-padded {
   padding: 10px; }
+
+#server-messages {
+  background-color: #dbdbdb; }
 
 /*! bulma.io v0.4.1 | MIT License | github.com/jgthms/bulma */
 @keyframes spinAround {
