@@ -20,7 +20,12 @@ library
                      , aeson
                      , bytestring
                      , containers
+                     , http-types
+                     , safe
                      , text
+                     , wai
+                     , wai-websockets
+                     , warp
                      , websockets
   default-language:    Haskell2010
 

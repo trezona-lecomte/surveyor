@@ -3,22 +3,29 @@
 
 module Lib where
 
-import qualified Control.Concurrent   as Concurrent
-import qualified Control.Exception    as Exception
-import qualified Control.Monad        as Monad
-import           Data.Aeson           as Aeson (FromJSON, ToJSON, decode,
-                                                defaultOptions, encode)
-import qualified Data.ByteString      as ByteString
-import qualified Data.ByteString.Lazy as ByteString.Lazy
-import qualified Data.Maybe           as Maybe
-import qualified Data.Monoid          as Monoid (mappend)
-import qualified Data.Set             as Set
-import           Data.Text            as Text
-import qualified Data.Text.Encoding   as Encoding
-import qualified Data.Text.IO         as Text.IO
-import           GHC.Generics         as Generics (Generic)
-import qualified Network.WebSockets   as WS
-
+import qualified Control.Concurrent             as Concurrent
+import qualified Control.Exception              as Exception
+import qualified Control.Monad                  as Monad
+import           Data.Aeson                     as Aeson (FromJSON, ToJSON,
+                                                          decode,
+                                                          defaultOptions,
+                                                          encode)
+import qualified Data.ByteString                as ByteString
+import qualified Data.ByteString.Lazy           as ByteString.Lazy
+import qualified Data.Maybe                     as Maybe
+import qualified Data.Monoid                    as Monoid (mappend)
+import qualified Data.Set                       as Set
+import           Data.Text                      as Text
+import qualified Data.Text.Encoding             as Encoding
+import qualified Data.Text.IO                   as Text.IO
+import           GHC.Generics                   as Generics (Generic)
+import qualified Network.HTTP.Types             as Http
+import qualified Network.Wai                    as Wai
+import qualified Network.Wai.Handler.Warp       as Warp
+import qualified Network.Wai.Handler.WebSockets as WS
+import qualified Network.WebSockets             as WS
+import qualified Safe
+-- import qualified Data.List                      as List
 
 data ServerState =
   ServerState { clients :: Set.Set Client
