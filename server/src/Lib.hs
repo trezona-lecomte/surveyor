@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Lib where
@@ -10,13 +11,11 @@ import           Data.Aeson                     as Aeson (FromJSON, ToJSON,
                                                           decode,
                                                           defaultOptions,
                                                           encode)
-import qualified Data.ByteString                as ByteString
-import qualified Data.ByteString.Lazy           as ByteString.Lazy
 import qualified Data.Maybe                     as Maybe
 import qualified Data.Monoid                    as Monoid (mappend)
 import qualified Data.Set                       as Set
+import qualified Data.String.Conversions        as Conversions (cs)
 import           Data.Text                      as Text
-import qualified Data.Text.Encoding             as Encoding
 import qualified Data.Text.IO                   as Text.IO
 import           GHC.Generics                   as Generics (Generic)
 import qualified Network.HTTP.Types             as Http
@@ -100,11 +99,6 @@ runServer ip port = do
   WS.runServer ip port $ application serverState
 
 
-broadcast :: Text -> ServerState -> IO ()
-broadcast message serverState =
-  Monad.forM_ (clients serverState) $ \client -> WS.sendTextData (conn client) message
-
-
 application :: Concurrent.MVar ServerState -> WS.ServerApp
 application server pending = do
   conn <- WS.acceptRequest pending
@@ -157,18 +151,24 @@ talk conn serverState client = Monad.forever $ do
       >>= broadcast (encodeSurvey $ survey newServerState)
 
 
-updateSurvey :: ServerState -> ByteString.Lazy.ByteString -> Survey
+broadcast :: Text -> ServerState -> IO ()
+broadcast message serverState =
+  Monad.forM_ (clients serverState) $ \client -> WS.sendTextData (conn client) message
+
+
+updateSurvey :: ServerState -> Text -> Survey
 updateSurvey serverState msg =
-  Maybe.fromMaybe (survey serverState) (decodeSurvey msg)
+  Maybe.fromMaybe (survey serverState) $ decodeSurvey $ Conversions.cs msg
+
+
+decodeSurvey :: Text -> Maybe Survey
+decodeSurvey text =
+  Aeson.decode $ Conversions.cs text
 
 
 encodeSurvey :: Survey -> Text
 encodeSurvey survey =
-  Encoding.decodeUtf8 $ ByteString.Lazy.toStrict $ Aeson.encode survey
-
-
-decodeSurvey text =
-  Aeson.decode text :: Maybe Survey
+  Conversions.cs $ Aeson.encode survey
 
 
 disconnect :: Concurrent.MVar ServerState -> Client -> IO ()

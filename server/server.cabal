@@ -22,6 +22,7 @@ library
                      , containers
                      , http-types
                      , safe
+                     , string-conversions
                      , text
                      , wai
                      , wai-websockets
