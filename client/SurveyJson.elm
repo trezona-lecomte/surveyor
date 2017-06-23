@@ -6,11 +6,6 @@ import Types exposing (..)
 import Uuid exposing (Uuid)
 
 
--- decodeString : Decoder a -> String -> Result String a
--- list : Decoder a -> Decoder (List a)
--- field : String -> Decoder a -> Decoder a
-
-
 decodeSurvey : String -> Result String Survey
 decodeSurvey =
     decodeString surveyDecoder
@@ -27,7 +22,7 @@ surveyDecoder =
 questionDecoder : Decoder Question
 questionDecoder =
     map4 Question
-        (field "id" uuidDecoder)
+        (field "questionId" uuidDecoder)
         (field "format" questionFormatDecoder)
         (field "prompt" Decode.string)
         (field "options" (Decode.list optionDecoder))
@@ -36,7 +31,7 @@ questionDecoder =
 optionDecoder : Decoder Option
 optionDecoder =
     map2 Option
-        (field "id" uuidDecoder)
+        (field "optionId" uuidDecoder)
         (field "text" Decode.string)
 
 
@@ -113,7 +108,7 @@ encodeQuestion question =
                     Encode.string ""
     in
         Encode.object
-            [ ( "id", questionIdEncoder )
+            [ ( "questionId", questionIdEncoder )
             , ( "format", Encode.string (toString question.format) )
             , ( "prompt", Encode.string question.prompt )
             , ( "options", Encode.list (List.map encodeOption question.options) )
@@ -132,6 +127,6 @@ encodeOption option =
                     Encode.string ""
     in
         Encode.object
-            [ ( "id", encodedUuid )
+            [ ( "optionId", encodedUuid )
             , ( "text", Encode.string option.text )
             ]

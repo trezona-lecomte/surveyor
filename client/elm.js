@@ -10228,7 +10228,7 @@ var _user$project$SurveyJson$encodeOption = function (option) {
 	return _elm_lang$core$Json_Encode$object(
 		{
 			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'id', _1: encodedUuid},
+			_0: {ctor: '_Tuple2', _0: 'optionId', _1: encodedUuid},
 			_1: {
 				ctor: '::',
 				_0: {
@@ -10253,7 +10253,7 @@ var _user$project$SurveyJson$encodeQuestion = function (question) {
 	return _elm_lang$core$Json_Encode$object(
 		{
 			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 'id', _1: questionIdEncoder},
+			_0: {ctor: '_Tuple2', _0: 'questionId', _1: questionIdEncoder},
 			_1: {
 				ctor: '::',
 				_0: {
@@ -10347,12 +10347,12 @@ var _user$project$SurveyJson$uuidDecoder = A2(_elm_lang$core$Json_Decode$andThen
 var _user$project$SurveyJson$optionDecoder = A3(
 	_elm_lang$core$Json_Decode$map2,
 	_user$project$Types$Option,
-	A2(_elm_lang$core$Json_Decode$field, 'id', _user$project$SurveyJson$uuidDecoder),
+	A2(_elm_lang$core$Json_Decode$field, 'optionId', _user$project$SurveyJson$uuidDecoder),
 	A2(_elm_lang$core$Json_Decode$field, 'text', _elm_lang$core$Json_Decode$string));
 var _user$project$SurveyJson$questionDecoder = A5(
 	_elm_lang$core$Json_Decode$map4,
 	_user$project$Types$Question,
-	A2(_elm_lang$core$Json_Decode$field, 'id', _user$project$SurveyJson$uuidDecoder),
+	A2(_elm_lang$core$Json_Decode$field, 'questionId', _user$project$SurveyJson$uuidDecoder),
 	A2(_elm_lang$core$Json_Decode$field, 'format', _user$project$SurveyJson$questionFormatDecoder),
 	A2(_elm_lang$core$Json_Decode$field, 'prompt', _elm_lang$core$Json_Decode$string),
 	A2(
@@ -10677,7 +10677,18 @@ var _user$project$Surveyor$receiveFromServer = F2(
 			return _elm_lang$core$Native_Utils.update(
 				model,
 				{
-					serverMessages: {ctor: '::', _0: message, _1: model.serverMessages}
+					serverMessages: A2(
+						_elm_lang$core$Basics_ops['++'],
+						{
+							ctor: '::',
+							_0: _p0._0,
+							_1: {
+								ctor: '::',
+								_0: message,
+								_1: {ctor: '[]'}
+							}
+						},
+						model.serverMessages)
 				});
 		}
 	});
@@ -11495,7 +11506,14 @@ var _user$project$Surveyor$view = function (model) {
 							_1: {ctor: '[]'}
 						}
 					},
-					A2(_elm_lang$core$List$map, _user$project$Surveyor$viewServerMessage, model.serverMessages)),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(model.userName),
+							_1: {ctor: '[]'}
+						},
+						A2(_elm_lang$core$List$map, _user$project$Surveyor$viewServerMessage, model.serverMessages))),
 				_1: {
 					ctor: '::',
 					_0: A2(

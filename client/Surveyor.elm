@@ -139,7 +139,7 @@ receiveFromServer model message =
             }
 
         Err error ->
-            { model | serverMessages = message :: model.serverMessages }
+            { model | serverMessages = [ error, message ] ++ model.serverMessages }
 
 
 editFormat : Question -> String -> Question -> Question
@@ -206,7 +206,9 @@ view model =
     div [ class "page" ]
         [ navBar model
         , div [ class "section", id "server-messages" ]
-            (List.map viewServerMessage model.serverMessages)
+            ([ text model.userName ]
+                ++ (List.map viewServerMessage model.serverMessages)
+            )
         , div [ class "section" ]
             [ div [ class "container" ]
                 [ tabMenu model ]

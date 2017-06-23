@@ -1,42 +1,57 @@
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Lib where
 
-import           Control.Concurrent (MVar, modifyMVar, modifyMVar_, newMVar,
-                                     readMVar)
-import           Control.Exception  (finally)
-import           Control.Monad      (forM_, forever, unless)
-import           Data.Char          (isPunctuation, isSpace)
-import           Data.Monoid        (mappend)
-import qualified Data.Set           as Set
-import           Data.Text          (Text)
-import qualified Data.Text          as T
-import qualified Data.Text.IO       as T
-import           Debug.Trace        (trace)
-import qualified Network.WebSockets as WS
+import qualified Control.Concurrent   as Concurrent
+import qualified Control.Exception    as Exception
+import qualified Control.Monad        as Monad
+import           Data.Aeson           as Aeson (FromJSON, ToJSON, decode,
+                                                defaultOptions, encode)
+import qualified Data.ByteString      as ByteString
+import qualified Data.ByteString.Lazy as ByteString.Lazy
+import qualified Data.Maybe           as Maybe
+import qualified Data.Monoid          as Monoid (mappend)
+import qualified Data.Set             as Set
+import           Data.Text            as Text
+import qualified Data.Text.Encoding   as Encoding
+import qualified Data.Text.IO         as Text.IO
+import           GHC.Generics         as Generics (Generic)
+import qualified Network.WebSockets   as WS
 
 
-type ServerState = Set.Set Client
--- type ServerState = (Set.Set Client, Survey)
+data ServerState =
+  ServerState { clients :: Set.Set Client
+              , survey  :: Survey
+              }
 
-data Client = Client { userName :: Text
-                     , conn     :: WS.Connection
-                     } deriving (Show)
 
-data Survey = Survy { title       :: String
-                    , description :: String
-                    , questions   :: [Question]
-                    }
+data Client =
+  Client { userName :: Text
+         , conn     :: WS.Connection
+         } deriving (Show)
 
-data Question = Question { questionId :: String
-                         , format     :: String
-                         , prompt     :: String
-                         , options    :: [Option]
-                         }
 
-data Option = Option { optionId :: String
-                     , text     :: String
-                     }
+data Survey =
+  Survey { title       :: Text
+         , description :: Text
+         , questions   :: [Question]
+         } deriving (Generic, Show)
+
+
+data Question =
+  Question { questionId :: Text
+           , format     :: Text
+           , prompt     :: Text
+           , options    :: [Option]
+           } deriving (Generic, Show)
+
+
+data Option =
+  Option { optionId :: Text
+         , text     :: Text
+         } deriving (Generic, Show)
+
 
 data Command =
     UpdateSurvey Text
@@ -52,68 +67,109 @@ instance Eq Client where
 instance Ord Client where
   compare (Client a _) (Client b _) = compare a b
 
+instance ToJSON Survey
+instance ToJSON Question
+instance ToJSON Option
+instance FromJSON Survey
+instance FromJSON Question
+instance FromJSON Option
+
+
+initialServerState =
+  ServerState { clients = Set.empty
+              , survey = initialSurvey
+              }
+
+initialSurvey =
+  Survey { title = ""
+         , description = ""
+         , questions = []
+         }
+
+
 runServer :: String -> Int -> IO ()
 runServer ip port = do
-  state <- newMVar newServerState
-  WS.runServer ip port $ application state
+  serverState <- Concurrent.newMVar initialServerState
+  WS.runServer ip port $ application serverState
 
-newServerState :: ServerState
-newServerState = Set.empty
 
 broadcast :: Text -> ServerState -> IO ()
-broadcast message clients = do
-  T.putStrLn message
-  forM_ clients $ \client -> WS.sendTextData (conn client) message
+broadcast message serverState =
+  Monad.forM_ (clients serverState) $ \client -> WS.sendTextData (conn client) message
 
-application :: MVar ServerState -> WS.ServerApp
-application state pending = do
+
+application :: Concurrent.MVar ServerState -> WS.ServerApp
+application server pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
   msg <- WS.receiveData conn
-  clients <- readMVar state
-
-  T.putStrLn msg
+  serverState <- Concurrent.readMVar server
 
   case msg of
-    _   | not (any (`T.isPrefixOf` msg) actionPrefixes) ->
+    _   | not (Prelude.any (`Text.isPrefixOf` msg) actionPrefixes) ->
             WS.sendTextData conn ("Please register as a client first." :: Text)
 
-        | Set.member client clients ->
+        | Set.member client $ clients serverState ->
             WS.sendTextData conn ("Client already exists" :: Text)
 
-        | otherwise -> flip finally (disconnect state client) $ do
-            addClient conn state client
-            talk conn state client
+        | otherwise -> flip Exception.finally (disconnect server client) $ do
+            addClient conn server client
+            talk conn server client
       where
+        -- TODO: Standardise the instruction interface, put it in JSON.
         actionPrefixes  = [joinAsPrefix]
         joinAsPrefix    = "register as "
-        client          = Client (T.drop (T.length joinAsPrefix) msg) conn
+        client          = Client (Text.drop (Text.length joinAsPrefix) msg) conn
 
-addClient :: WS.Connection -> MVar ServerState -> Client -> IO ()
-addClient conn state client =
-  modifyMVar_ state $ \s -> do
-    let s' = Set.insert client s
 
-    unless (null s) $
-      WS.sendTextData conn $
-        "Connected users: " `mappend`
-        T.intercalate ", " (Set.elems (Set.map userName s))
+addClient :: WS.Connection -> Concurrent.MVar ServerState -> Client -> IO ()
+addClient conn serverState client =
+  Concurrent.modifyMVar_ serverState $ \server -> do
+    let newClients = Set.insert client (clients server)
+    let newServerState = ServerState newClients $ survey server
 
-    broadcast (userName client `mappend` " joined") s'
+    WS.sendTextData conn $ Aeson.encode $ survey newServerState
 
-    return s'
+    return newServerState
 
-talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
-talk conn state client = forever $ do
+
+talk :: WS.Connection -> Concurrent.MVar ServerState -> Client -> IO ()
+talk conn serverState client = Monad.forever $ do
     msg <- WS.receiveData conn
-    readMVar state >>= broadcast
-        (userName client `mappend` " updated the survey: " `mappend` msg)
 
-disconnect :: MVar (Set.Set Client) -> Client -> IO ()
-disconnect state client =
-    modifyMVar_ state $ \s -> do
-      let newState = Set.delete client s
+    -- TODO: I don't know if this is actually safe:
+    Concurrent.modifyMVar_ serverState $ \s -> do
+      let newSurvey = updateSurvey s msg
+      let newServerState = ServerState (clients s) newSurvey
+      return newServerState
 
-      broadcast (userName client `mappend` " disconnected") newState
+    -- TODO: Figure out how to do this nicely:
+    newServerState <- Concurrent.readMVar serverState
 
-      return newState
+    Concurrent.readMVar serverState
+      >>= broadcast (encodeSurvey $ survey newServerState)
+
+
+updateSurvey :: ServerState -> ByteString.Lazy.ByteString -> Survey
+updateSurvey serverState msg =
+  Maybe.fromMaybe (survey serverState) (decodeSurvey msg)
+
+
+encodeSurvey :: Survey -> Text
+encodeSurvey survey =
+  Encoding.decodeUtf8 $ ByteString.Lazy.toStrict $ Aeson.encode survey
+
+
+decodeSurvey text =
+  Aeson.decode text :: Maybe Survey
+
+
+disconnect :: Concurrent.MVar ServerState -> Client -> IO ()
+disconnect serverState client =
+    Concurrent.modifyMVar_ serverState $ \s -> do
+      let newClients = Set.delete client (clients s)
+      let newServerState = ServerState newClients (survey s)
+
+      broadcast (userName client `mappend` " disconnected") newServerState
+
+      return newServerState
