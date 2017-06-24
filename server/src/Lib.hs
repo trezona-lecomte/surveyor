@@ -24,7 +24,9 @@ import qualified Network.Wai.Handler.Warp       as Warp
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Safe
--- import qualified Data.List                      as List
+
+
+-- TYPES
 
 data ServerState =
   ServerState { clients :: Set.Set Client
@@ -64,15 +66,9 @@ data Command =
   | Broadcast Text
   deriving (Eq, Show)
 
-instance Show WS.Connection where
-  show _ = show ""
-
-instance Eq Client where
-  (Client a _) == (Client b _) = a == b
-
-instance Ord Client where
-  compare (Client a _) (Client b _) = compare a b
-
+instance Eq Client where (Client a _) == (Client b _) = a == b
+instance Ord Client where compare (Client a _) (Client b _) = compare a b
+instance Show WS.Connection where show _ = show ""
 instance ToJSON Survey
 instance ToJSON Question
 instance ToJSON Option
@@ -92,6 +88,8 @@ initialSurvey =
          , questions = []
          }
 
+
+-- SERVER
 
 runServer :: String -> Int -> IO ()
 runServer ip port = do
