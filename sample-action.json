@@ -1,0 +1,31 @@
+{
+  "action": "UpdateSurvey",
+  "survey": {
+    "surveyId": "60a75adb-7697-44b5-9178-9f7683b88651",
+    "title": "Sample survey",
+    "description": "This is a survey to play with, yay.",
+    "questions": [
+      {
+        "questionId": "5e92d65b-fcb9-428d-a5b8-45d67dc73271",
+        "format": "MultiChoice",
+        "prompt": "Untitled Question 2",
+        "optons": [
+          {
+            "optionId": "60a75adb-e5fc-4d25-ad3b-e2a81b368296",
+            "text": "First option of second question"
+          },
+          {
+            "optionId": "69068fc3-c3dc-45b2-9a4f-9f7683b88651",
+            "text": "Second option of second question"
+          }
+        ]
+      },
+      {
+        "questionId": "d444e11c-901f-4a05-827a-e0eb62a5ad74",
+        "format": "OpenEnded",
+        "prompt": "Untitled Question 3",
+        "optons": []
+      }
+    ]
+  }
+}

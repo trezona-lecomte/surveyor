@@ -74,14 +74,6 @@ questionFormatFromString format =
             Decode.fail format
 
 
-
--- Decoder (Maybe Types.QuestionId)
--- -> Decoder Types.QuestionFormat
--- -> Decoder String
--- -> Decoder (List Option -> Question)
--- pointDecoder = Json.Decode.map2 Point (Json.Decode.field "x" Json.Decode.int) (Json.Decode.field "y" Json.Decode.int)
-
-
 modelEncoder : Model -> Decode.Value
 modelEncoder model =
     Encode.object
