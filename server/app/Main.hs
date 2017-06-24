@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import           Lib
 
 main :: IO ()
-main = runServer "0.0.0.0" 8000
+main = runServer 8000

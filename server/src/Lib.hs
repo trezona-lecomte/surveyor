@@ -28,14 +28,14 @@ import qualified Safe
 
 -- TYPES
 
-data ServerState =
-  ServerState { clients :: Set.Set Client
-              , survey  :: Survey
-              }
+data State =
+  State { clients :: Set.Set Client
+        , survey  :: Survey
+        }
 
 
 data Client =
-  Client { userName :: Text
+  Client { clientId :: Text
          , conn     :: WS.Connection
          } deriving (Show)
 
@@ -77,8 +77,8 @@ instance FromJSON Question
 instance FromJSON Option
 
 
-initialServerState =
-  ServerState { clients = Set.empty
+initialState =
+  State { clients = Set.empty
               , survey = initialSurvey
               }
 
@@ -91,14 +91,20 @@ initialSurvey =
 
 -- SERVER
 
-runServer :: String -> Int -> IO ()
-runServer ip port = do
-  serverState <- Concurrent.newMVar initialServerState
-  WS.runServer ip port $ application serverState
+runServer :: Int -> IO ()
+runServer port = do
+  serverState <- Concurrent.newMVar initialState
+  Warp.run port $ WS.websocketsOr WS.defaultConnectionOptions
+    (wsApp serverState)
+    httpApp
 
+  -- WS.runServer ip port $ application serverState
 
-application :: Concurrent.MVar ServerState -> WS.ServerApp
-application server pending = do
+httpApp :: Wai.Application
+httpApp _ respond = respond $ Wai.responseLBS Http.status400 [] "API pending"
+
+wsApp :: Concurrent.MVar State -> WS.ServerApp
+wsApp server pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
   msg <- WS.receiveData conn
@@ -112,7 +118,7 @@ application server pending = do
             WS.sendTextData conn ("Client already exists" :: Text)
 
         | otherwise -> flip Exception.finally (disconnect server client) $ do
-            addClient conn server client
+            register conn server client
             talk conn server client
       where
         -- TODO: Standardise the instruction interface, put it in JSON.
@@ -121,40 +127,40 @@ application server pending = do
         client          = Client (Text.drop (Text.length joinAsPrefix) msg) conn
 
 
-addClient :: WS.Connection -> Concurrent.MVar ServerState -> Client -> IO ()
-addClient conn serverState client =
-  Concurrent.modifyMVar_ serverState $ \server -> do
-    let newClients = Set.insert client (clients server)
-    let newServerState = ServerState newClients $ survey server
+register :: WS.Connection -> Concurrent.MVar State -> Client -> IO ()
+register conn serverState client =
+  Concurrent.modifyMVar_ serverState $ \state -> do
+    let newClients = Set.insert client (clients state)
+    let newState = State newClients $ survey state
 
-    WS.sendTextData conn $ Aeson.encode $ survey newServerState
+    WS.sendTextData conn $ Aeson.encode $ survey newState
 
-    return newServerState
+    return newState
 
 
-talk :: WS.Connection -> Concurrent.MVar ServerState -> Client -> IO ()
+talk :: WS.Connection -> Concurrent.MVar State -> Client -> IO ()
 talk conn serverState client = Monad.forever $ do
     msg <- WS.receiveData conn
 
     -- TODO: I don't know if this is actually safe:
     Concurrent.modifyMVar_ serverState $ \s -> do
       let newSurvey = updateSurvey s msg
-      let newServerState = ServerState (clients s) newSurvey
-      return newServerState
+      let newState = State (clients s) newSurvey
+      return newState
 
     -- TODO: Figure out how to do this nicely:
-    newServerState <- Concurrent.readMVar serverState
+    newState <- Concurrent.readMVar serverState
 
     Concurrent.readMVar serverState
-      >>= broadcast (encodeSurvey $ survey newServerState)
+      >>= broadcast (encodeSurvey $ survey newState)
 
 
-broadcast :: Text -> ServerState -> IO ()
+broadcast :: Text -> State -> IO ()
 broadcast message serverState =
   Monad.forM_ (clients serverState) $ \client -> WS.sendTextData (conn client) message
 
 
-updateSurvey :: ServerState -> Text -> Survey
+updateSurvey :: State -> Text -> Survey
 updateSurvey serverState msg =
   Maybe.fromMaybe (survey serverState) $ decodeSurvey $ Conversions.cs msg
 
@@ -169,12 +175,7 @@ encodeSurvey survey =
   Conversions.cs $ Aeson.encode survey
 
 
-disconnect :: Concurrent.MVar ServerState -> Client -> IO ()
+disconnect :: Concurrent.MVar State -> Client -> IO ()
 disconnect serverState client =
-    Concurrent.modifyMVar_ serverState $ \s -> do
-      let newClients = Set.delete client (clients s)
-      let newServerState = ServerState newClients (survey s)
-
-      broadcast (userName client `mappend` " disconnected") newServerState
-
-      return newServerState
+    Concurrent.modifyMVar_ serverState $ \state ->
+      return $ State (Set.delete client $ clients state) $ survey state
