@@ -93,9 +93,9 @@ initialSurvey =
 
 runServer :: Int -> IO ()
 runServer port = do
-  serverState <- Concurrent.newMVar initialState
+  stateMVar <- Concurrent.newMVar initialState
   Warp.run port $ WS.websocketsOr WS.defaultConnectionOptions
-    (wsApp serverState)
+    (wsApp stateMVar)
     httpApp
 
   -- WS.runServer ip port $ application serverState
@@ -104,22 +104,22 @@ httpApp :: Wai.Application
 httpApp _ respond = respond $ Wai.responseLBS Http.status400 [] "API pending"
 
 wsApp :: Concurrent.MVar State -> WS.ServerApp
-wsApp server pending = do
+wsApp stateMVar pending = do
   conn <- WS.acceptRequest pending
   WS.forkPingThread conn 30
   msg <- WS.receiveData conn
-  serverState <- Concurrent.readMVar server
+  state <- Concurrent.readMVar stateMVar
 
   case msg of
     _   | not (Prelude.any (`Text.isPrefixOf` msg) actionPrefixes) ->
             WS.sendTextData conn ("Please register as a client first." :: Text)
 
-        | Set.member client $ clients serverState ->
+        | Set.member client $ clients state ->
             WS.sendTextData conn ("Client already exists" :: Text)
 
-        | otherwise -> flip Exception.finally (disconnect server client) $ do
-            register conn server client
-            talk conn server client
+        | otherwise -> flip Exception.finally (disconnect stateMVar client) $ do
+            register conn stateMVar client
+            talk conn stateMVar client
       where
         -- TODO: Standardise the instruction interface, put it in JSON.
         actionPrefixes  = [joinAsPrefix]
@@ -128,8 +128,8 @@ wsApp server pending = do
 
 
 register :: WS.Connection -> Concurrent.MVar State -> Client -> IO ()
-register conn serverState client =
-  Concurrent.modifyMVar_ serverState $ \state -> do
+register conn stateMVar client =
+  Concurrent.modifyMVar_ stateMVar $ \state -> do
     let newClients = Set.insert client (clients state)
     let newState = State newClients $ survey state
 
@@ -138,31 +138,28 @@ register conn serverState client =
     return newState
 
 
-broadcast :: Text -> State -> IO ()
-broadcast message serverState =
-  Monad.forM_ (clients serverState) $ \client -> WS.sendTextData (conn client) message
+broadcast :: State -> IO ()
+broadcast state =
+  Monad.forM_ (clients state) $ \client ->
+    WS.sendTextData (conn client) $ encodeState state
 
 
 talk :: WS.Connection -> Concurrent.MVar State -> Client -> IO ()
-talk conn serverState client = Monad.forever $ do
-    WS.receiveData conn >>= updateSurvey serverState
-
-    -- TODO: Figure out how to do this nicely:
-    newState <- Concurrent.readMVar serverState
-
-    Concurrent.readMVar serverState
-      >>= broadcast (encodeSurvey $ survey newState)
+talk conn stateMVar client = Monad.forever $ do
+    WS.receiveData conn >>= updateSurvey stateMVar
+    newState <- Concurrent.readMVar stateMVar
+    broadcast newState
 
 
 updateSurvey :: Concurrent.MVar State -> Text -> IO ()
-updateSurvey serverState msg =
-  Concurrent.modifyMVar_ serverState $ \state ->
+updateSurvey stateMVar msg =
+  Concurrent.modifyMVar_ stateMVar $ \state ->
     return $ State (clients state) $ replaceSurvey state msg
 
 
 replaceSurvey :: State -> Text -> Survey
-replaceSurvey serverState msg =
-  Maybe.fromMaybe (survey serverState) $ decodeSurvey $ Conversions.cs msg
+replaceSurvey state msg =
+  Maybe.fromMaybe (survey state) $ decodeSurvey $ Conversions.cs msg
 
 
 decodeSurvey :: Text -> Maybe Survey
@@ -170,12 +167,12 @@ decodeSurvey text =
   Aeson.decode $ Conversions.cs text
 
 
-encodeSurvey :: Survey -> Text
-encodeSurvey survey =
-  Conversions.cs $ Aeson.encode survey
+encodeState :: State -> Text
+encodeState state =
+  Conversions.cs $ Aeson.encode $ survey state -- TODO: encode state instead of just survey
 
 
 disconnect :: Concurrent.MVar State -> Client -> IO ()
-disconnect serverState client =
-    Concurrent.modifyMVar_ serverState $ \state ->
+disconnect stateMVar client =
+    Concurrent.modifyMVar_ stateMVar $ \state ->
       return $ State (Set.delete client $ clients state) $ survey state
