@@ -138,15 +138,14 @@ register conn serverState client =
     return newState
 
 
+broadcast :: Text -> State -> IO ()
+broadcast message serverState =
+  Monad.forM_ (clients serverState) $ \client -> WS.sendTextData (conn client) message
+
+
 talk :: WS.Connection -> Concurrent.MVar State -> Client -> IO ()
 talk conn serverState client = Monad.forever $ do
-    msg <- WS.receiveData conn
-
-    -- TODO: I don't know if this is actually safe:
-    Concurrent.modifyMVar_ serverState $ \s -> do
-      let newSurvey = updateSurvey s msg
-      let newState = State (clients s) newSurvey
-      return newState
+    WS.receiveData conn >>= updateSurvey serverState
 
     -- TODO: Figure out how to do this nicely:
     newState <- Concurrent.readMVar serverState
@@ -155,13 +154,14 @@ talk conn serverState client = Monad.forever $ do
       >>= broadcast (encodeSurvey $ survey newState)
 
 
-broadcast :: Text -> State -> IO ()
-broadcast message serverState =
-  Monad.forM_ (clients serverState) $ \client -> WS.sendTextData (conn client) message
-
-
-updateSurvey :: State -> Text -> Survey
+updateSurvey :: Concurrent.MVar State -> Text -> IO ()
 updateSurvey serverState msg =
+  Concurrent.modifyMVar_ serverState $ \state ->
+    return $ State (clients state) $ replaceSurvey state msg
+
+
+replaceSurvey :: State -> Text -> Survey
+replaceSurvey serverState msg =
   Maybe.fromMaybe (survey serverState) $ decodeSurvey $ Conversions.cs msg
 
 
