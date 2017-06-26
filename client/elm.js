@@ -10357,7 +10357,7 @@ var _user$project$JSON$surveyDecoder = A4(
 		_elm_lang$core$Json_Decode$list(_user$project$JSON$questionDecoder)));
 var _user$project$JSON$decodeSurvey = _elm_lang$core$Json_Decode$decodeString(_user$project$JSON$surveyDecoder);
 
-var _user$project$WS$receiveFromServer = F2(
+var _user$project$WS$receive = F2(
 	function (model, message) {
 		var _p0 = _user$project$JSON$decodeSurvey(message);
 		if (_p0.ctor === 'Ok') {
@@ -10399,7 +10399,7 @@ var _user$project$WS$register = function (model) {
 var _user$project$WS$listen = function (model) {
 	return _elm_lang$websocket$WebSocket$listen(_user$project$WS$server);
 };
-var _user$project$WS$sendToServer = function (model) {
+var _user$project$WS$send = function (model) {
 	return A2(
 		_elm_lang$core$Platform_Cmd_ops['!'],
 		model,
@@ -10670,7 +10670,7 @@ var _user$project$Surveyor$editOptionText = F2(
 			option,
 			{text: newText});
 	});
-var _user$project$Surveyor$addOption = F2(
+var _user$project$Surveyor$addOptionToQuestion = F2(
 	function (option, question) {
 		return _elm_lang$core$Native_Utils.update(
 			question,
@@ -10718,12 +10718,45 @@ var _user$project$Surveyor$editOption = F3(
 			});
 	});
 var _user$project$Surveyor$editQuestion = F3(
-	function (editedQuestion, questions, edit) {
+	function (model, editedQuestion, edit) {
 		var applyIfEdited = function (question) {
 			return _elm_lang$core$Native_Utils.eq(question.id, editedQuestion.id) ? edit(question) : question;
 		};
-		return A2(_elm_lang$core$List$map, applyIfEdited, questions);
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				questions: A2(_elm_lang$core$List$map, applyIfEdited, model.questions)
+			});
 	});
+var _user$project$Surveyor$addOption = F2(
+	function (model, question) {
+		var _p0 = _user$project$Types$newUuid(model);
+		var newModel = _p0._0;
+		var uuid = _p0._1;
+		var option = _user$project$Types$newOption(uuid);
+		return A3(
+			_user$project$Surveyor$editQuestion,
+			newModel,
+			question,
+			_user$project$Surveyor$addOptionToQuestion(option));
+	});
+var _user$project$Surveyor$addQuestion = function (model) {
+	var _p1 = _user$project$Types$newUuid(model);
+	var newModel = _p1._0;
+	var uuid = _p1._1;
+	return _elm_lang$core$Native_Utils.update(
+		newModel,
+		{
+			questions: A2(
+				_elm_lang$core$Basics_ops['++'],
+				model.questions,
+				{
+					ctor: '::',
+					_0: A2(_user$project$Types$newQuestion, model.questions, uuid),
+					_1: {ctor: '[]'}
+				})
+		});
+};
 var _user$project$Surveyor$init = function (flags) {
 	var model = _user$project$Types$initialModel(flags.startTime);
 	return {
@@ -10738,109 +10771,75 @@ var _user$project$Surveyor$selectOptionTextPort = _elm_lang$core$Native_Platform
 		return v;
 	});
 var _user$project$Surveyor$selectOptionText = function (option) {
-	var _p0 = option.id;
-	if (_p0.ctor === 'Just') {
+	var _p2 = option.id;
+	if (_p2.ctor === 'Just') {
 		return _user$project$Surveyor$selectOptionTextPort(
-			_danyx23$elm_uuid$Uuid$toString(_p0._0));
+			_danyx23$elm_uuid$Uuid$toString(_p2._0));
 	} else {
 		return _elm_lang$core$Platform_Cmd$none;
 	}
 };
 var _user$project$Surveyor$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'TabClicked':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{activeTab: _p1._0}),
+						{activeTab: _p3._0}),
 					{ctor: '[]'});
 			case 'TitleEdited':
-				return _user$project$WS$sendToServer(
+				return _user$project$WS$send(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{title: _p1._0}));
+						{title: _p3._0}));
 			case 'DescriptionEdited':
-				return _user$project$WS$sendToServer(
+				return _user$project$WS$send(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{description: _p1._0}));
+						{description: _p3._0}));
 			case 'QuestionAdded':
-				var _p2 = _user$project$Types$newUuid(model);
-				var newModel = _p2._0;
-				var uuid = _p2._1;
-				return _user$project$WS$sendToServer(
-					_elm_lang$core$Native_Utils.update(
-						newModel,
-						{
-							questions: A2(
-								_elm_lang$core$Basics_ops['++'],
-								model.questions,
-								{
-									ctor: '::',
-									_0: A2(_user$project$Types$newQuestion, model.questions, uuid),
-									_1: {ctor: '[]'}
-								})
-						}));
+				return _user$project$WS$send(
+					_user$project$Surveyor$addQuestion(model));
 			case 'QuestionClicked':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{activeQuestionId: _p1._0}),
+						{activeQuestionId: _p3._0}),
 					{ctor: '[]'});
 			case 'FormatSelected':
-				return _user$project$WS$sendToServer(
-					_elm_lang$core$Native_Utils.update(
+				return _user$project$WS$send(
+					A3(
+						_user$project$Surveyor$editQuestion,
 						model,
-						{
-							questions: A3(
-								_user$project$Surveyor$editQuestion,
-								_p1._0,
-								model.questions,
-								_user$project$Surveyor$editFormat(_p1._1))
-						}));
+						_p3._0,
+						_user$project$Surveyor$editFormat(_p3._1)));
 			case 'PromptEdited':
-				return _user$project$WS$sendToServer(
-					_elm_lang$core$Native_Utils.update(
+				return _user$project$WS$send(
+					A3(
+						_user$project$Surveyor$editQuestion,
 						model,
-						{
-							questions: A3(
-								_user$project$Surveyor$editQuestion,
-								_p1._0,
-								model.questions,
-								_user$project$Surveyor$editPrompt(_p1._1))
-						}));
+						_p3._0,
+						_user$project$Surveyor$editPrompt(_p3._1)));
 			case 'OptionAdded':
-				var _p3 = _user$project$Types$newUuid(model);
-				var newModel = _p3._0;
-				var uuid = _p3._1;
-				var option = _user$project$Types$newOption(uuid);
-				return _user$project$WS$sendToServer(
-					_elm_lang$core$Native_Utils.update(
-						newModel,
-						{
-							questions: A3(
-								_user$project$Surveyor$editQuestion,
-								_p1._0,
-								model.questions,
-								_user$project$Surveyor$addOption(option))
-						}));
+				return _user$project$WS$send(
+					A2(_user$project$Surveyor$addOption, model, _p3._0));
 			case 'OptionEdited':
-				return _user$project$WS$sendToServer(
+				return _user$project$WS$send(
 					A3(
 						_user$project$Surveyor$editOption,
 						model,
-						_p1._0,
-						_user$project$Surveyor$editOptionText(_p1._1)));
+						_p3._0,
+						_user$project$Surveyor$editOptionText(_p3._1)));
 			case 'OptionRemoved':
-				return _user$project$WS$sendToServer(
+				return _user$project$WS$send(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{
-							questions: A2(_user$project$Surveyor$removeOption, model.questions, _p1._1)
+							questions: A2(_user$project$Surveyor$removeOption, model.questions, _p3._1)
 						}));
 			case 'SelectOptionText':
 				return A2(
@@ -10848,13 +10847,13 @@ var _user$project$Surveyor$update = F2(
 					model,
 					{
 						ctor: '::',
-						_0: _user$project$Surveyor$selectOptionText(_p1._0),
+						_0: _user$project$Surveyor$selectOptionText(_p3._0),
 						_1: {ctor: '[]'}
 					});
 			default:
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
-					A2(_user$project$WS$receiveFromServer, model, _p1._0),
+					A2(_user$project$WS$receive, model, _p3._0),
 					{ctor: '[]'});
 		}
 	});

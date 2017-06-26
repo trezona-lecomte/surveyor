@@ -21,13 +21,13 @@ listen model =
     WebSocket.listen server
 
 
-sendToServer : Model -> ( Model, Cmd msg )
-sendToServer model =
+send : Model -> ( Model, Cmd msg )
+send model =
     model ! [ WebSocket.send server (JSON.encodeModel model) ]
 
 
-receiveFromServer : Model -> String -> Model
-receiveFromServer model message =
+receive : Model -> String -> Model
+receive model message =
     case JSON.decodeSurvey message of
         Ok newSurvey ->
             { model

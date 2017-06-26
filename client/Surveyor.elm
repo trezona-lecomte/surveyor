@@ -44,48 +44,58 @@ update msg model =
             { model | activeTab = tab } ! []
 
         TitleEdited title ->
-            WS.sendToServer { model | title = title }
+            WS.send { model | title = title }
 
         DescriptionEdited description ->
-            WS.sendToServer { model | description = description }
+            WS.send { model | description = description }
 
         QuestionAdded ->
-            let
-                ( newModel, uuid ) =
-                    newUuid model
-            in
-                WS.sendToServer { newModel | questions = model.questions ++ [ newQuestion model.questions uuid ] }
+            WS.send (addQuestion model)
 
         QuestionClicked questionId ->
             { model | activeQuestionId = questionId } ! []
 
         FormatSelected question format ->
-            WS.sendToServer (editQuestion model question (editFormat format))
+            WS.send (editQuestion model question (editFormat format))
 
         PromptEdited question prompt ->
-            WS.sendToServer (editQuestion model question (editPrompt prompt))
+            WS.send (editQuestion model question (editPrompt prompt))
 
         OptionAdded question ->
-            let
-                ( newModel, uuid ) =
-                    newUuid model
-
-                option =
-                    newOption uuid
-            in
-                WS.sendToServer (editQuestion model question (addOption option))
+            WS.send (addOption model question)
 
         OptionEdited option newText ->
-            WS.sendToServer (editOption model option (editOptionText newText))
+            WS.send (editOption model option (editOptionText newText))
 
         OptionRemoved question option ->
-            WS.sendToServer { model | questions = removeOption model.questions option }
+            WS.send { model | questions = removeOption model.questions option }
 
         SelectOptionText option ->
             model ! [ selectOptionText option ]
 
         ReceiveMessage message ->
-            WS.receiveFromServer model message ! []
+            WS.receive model message ! []
+
+
+addQuestion : Model -> Model
+addQuestion model =
+    let
+        ( newModel, uuid ) =
+            newUuid model
+    in
+        { newModel | questions = model.questions ++ [ newQuestion model.questions uuid ] }
+
+
+addOption : Model -> Question -> Model
+addOption model question =
+    let
+        ( newModel, uuid ) =
+            newUuid model
+
+        option =
+            newOption uuid
+    in
+        (editQuestion newModel question (addOptionToQuestion option))
 
 
 editQuestion : Model -> Question -> (Question -> Question) -> Model
@@ -125,8 +135,8 @@ editPrompt newPrompt question =
     { question | prompt = newPrompt }
 
 
-addOption : Option -> Question -> Question
-addOption option question =
+addOptionToQuestion : Option -> Question -> Question
+addOptionToQuestion option question =
     { question | options = question.options ++ [ option ] }
 
 
