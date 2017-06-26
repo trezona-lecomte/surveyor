@@ -1,14 +1,12 @@
-port module Surveyor exposing (Msg, init, update, view, subscriptions)
+port module Surveyor exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onFocus, onInput)
 import List
-import Random.Pcg as Pcg
-import SurveyJson
 import Types exposing (..)
 import Uuid
-import WebSocket
+import WS
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -17,7 +15,7 @@ init flags =
         model =
             initialModel flags.startTime
     in
-        ( model, register model )
+        ( model, WS.register model )
 
 
 
@@ -33,11 +31,10 @@ type Msg
     | FormatSelected Question String
     | PromptEdited Question String
     | OptionAdded Question
-    | OptionEdited Question Option String
+    | OptionEdited Option String
     | OptionRemoved Question Option
     | SelectOptionText Option
     | ReceiveMessage String
-    | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -47,154 +44,122 @@ update msg model =
             { model | activeTab = tab } ! []
 
         TitleEdited title ->
-            sendToServer { model | title = title }
+            WS.sendToServer { model | title = title }
 
         DescriptionEdited description ->
-            sendToServer { model | description = description }
+            WS.sendToServer { model | description = description }
 
         QuestionAdded ->
             let
-                ( newUuid, newSeed ) =
-                    Pcg.step Uuid.uuidGenerator model.uuidSeed
+                ( newModel, uuid ) =
+                    newUuid model
             in
-                sendToServer { model | uuidSeed = newSeed, questions = model.questions ++ [ newQuestion model.questions newUuid ] }
+                WS.sendToServer { newModel | questions = model.questions ++ [ newQuestion model.questions uuid ] }
 
         QuestionClicked questionId ->
-            case questionId of
-                Just id ->
-                    { model | activeQuestionId = Just id } ! []
-
-                Nothing ->
-                    { model | activeQuestionId = Nothing } ! []
+            { model | activeQuestionId = questionId } ! []
 
         FormatSelected question format ->
-            sendToServer { model | questions = List.map (editFormat question format) model.questions }
+            WS.sendToServer (editQuestion model question (editFormat format))
 
         PromptEdited question prompt ->
-            sendToServer { model | questions = List.map (editPrompt question prompt) model.questions }
+            WS.sendToServer (editQuestion model question (editPrompt prompt))
 
         OptionAdded question ->
             let
-                ( newUuid, newSeed ) =
-                    Pcg.step Uuid.uuidGenerator model.uuidSeed
+                ( newModel, uuid ) =
+                    newUuid model
 
                 option =
-                    newOption question.id newUuid
+                    newOption uuid
             in
-                case option of
-                    Just opt ->
-                        sendToServer { model | uuidSeed = newSeed, questions = List.map (addOption opt question) model.questions }
+                WS.sendToServer (editQuestion model question (addOption option))
 
-                    Nothing ->
-                        model ! []
-
-        OptionEdited question option newText ->
-            sendToServer { model | questions = List.map (editOption question option newText) model.questions }
+        OptionEdited option newText ->
+            WS.sendToServer (editOption model option (editOptionText newText))
 
         OptionRemoved question option ->
-            sendToServer { model | questions = List.map (removeOption question option) model.questions }
+            WS.sendToServer { model | questions = removeOption model.questions option }
 
         SelectOptionText option ->
-            case option.id of
-                Just id ->
-                    model ! [ selectOptionText (Uuid.toString id) ]
-
-                Nothing ->
-                    model ! []
+            model ! [ selectOptionText option ]
 
         ReceiveMessage message ->
-            receiveFromServer model message ! []
-
-        NoOp ->
-            model ! []
+            WS.receiveFromServer model message ! []
 
 
-register : Model -> Cmd Msg
-register model =
+editQuestion : Model -> Question -> (Question -> Question) -> Model
+editQuestion model editedQuestion edit =
     let
-        msg =
-            "register as " ++ model.userName
+        applyIfEdited question =
+            if question.id == editedQuestion.id then
+                edit question
+            else
+                question
     in
-        WebSocket.send ("ws://" ++ model.serverSocketAddress) msg
+        { model | questions = List.map applyIfEdited model.questions }
 
 
-sendToServer : Model -> ( Model, Cmd Msg )
-sendToServer model =
-    model
-        ! [ WebSocket.send
-                ("ws://" ++ model.serverSocketAddress)
-                (SurveyJson.encodeModel model)
-          ]
-
-
-receiveFromServer : Model -> String -> Model
-receiveFromServer model message =
-    case (SurveyJson.decodeSurvey message) of
-        Ok newSurvey ->
-            { model
-                | title = newSurvey.title
-                , description = newSurvey.description
-                , questions = newSurvey.questions
-                , serverMessages = message :: model.serverMessages
-            }
-
-        Err error ->
-            { model | serverMessages = [ error, message ] ++ model.serverMessages }
-
-
-editFormat : Question -> String -> Question -> Question
-editFormat editedQuestion newFormat question =
-    if question == editedQuestion then
-        { question | format = parseQuestionFormat newFormat }
-    else
-        question
-
-
-editPrompt : Question -> String -> Question -> Question
-editPrompt editedQuestion newPrompt question =
-    if question == editedQuestion then
-        { question | prompt = newPrompt }
-    else
-        question
-
-
-addOption : Option -> Question -> Question -> Question
-addOption option addedOnQuestion question =
-    if question == addedOnQuestion then
-        { question | options = question.options ++ [ option ] }
-    else
-        question
-
-
-editOption : Question -> Option -> String -> Question -> Question
-editOption editedQuestion editedOption newText question =
+editOption : Model -> Option -> (Option -> Option) -> Model
+editOption model editedOption edit =
     let
-        editOptionInQuestion option =
+        applyIfEdited option =
             if option.id == editedOption.id then
-                { option | text = newText }
+                edit option
             else
                 option
+
+        editOptionInQuestion question =
+            { question | options = List.map applyIfEdited question.options }
     in
-        if question == editedQuestion then
-            { question | options = List.map editOptionInQuestion question.options }
-        else
-            question
+        { model | questions = (List.map editOptionInQuestion model.questions) }
 
 
-removeOption : Question -> Option -> Question -> Question
-removeOption removedFromQuestion option question =
-    if question == removedFromQuestion then
-        { question | options = List.filter ((/=) option) question.options }
-    else
-        question
+editFormat : String -> Question -> Question
+editFormat newFormat question =
+    { question | format = parseQuestionFormat newFormat }
 
 
-port selectOptionText : String -> Cmd msg
+editPrompt : String -> Question -> Question
+editPrompt newPrompt question =
+    { question | prompt = newPrompt }
+
+
+addOption : Option -> Question -> Question
+addOption option question =
+    { question | options = question.options ++ [ option ] }
+
+
+editOptionText : String -> Option -> Option
+editOptionText newText option =
+    { option | text = newText }
+
+
+removeOption : List Question -> Option -> List Question
+removeOption questions removedOption =
+    let
+        removeOptionFromQuestion question =
+            { question | options = List.filter ((/=) removedOption) question.options }
+    in
+        List.map removeOptionFromQuestion questions
+
+
+selectOptionText : Option -> Cmd msg
+selectOptionText option =
+    case option.id of
+        Just id ->
+            selectOptionTextPort (Uuid.toString id)
+
+        Nothing ->
+            Cmd.none
+
+
+port selectOptionTextPort : String -> Cmd msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WebSocket.listen ("ws://" ++ model.serverSocketAddress) ReceiveMessage
+    WS.listen model ReceiveMessage
 
 
 
@@ -416,7 +381,6 @@ viewOption question option =
                 [ input
                     [ type_ "radio"
                     , name (toString question.id)
-                    , onClick NoOp
                     , disabled True
                     ]
                     []
@@ -427,7 +391,7 @@ viewOption question option =
                     , class "input is-small is-borderless"
                     , value option.text
                     , placeholder "Option ..."
-                    , onInput (OptionEdited question option)
+                    , onInput (OptionEdited option)
                     , onFocus (SelectOptionText option)
                     ]
                     []

@@ -1,4 +1,4 @@
-module SurveyJson exposing (encodeModel, decodeSurvey)
+module JSON exposing (encodeModel, decodeSurvey)
 
 import Json.Decode as Decode exposing (..)
 import Json.Encode as Encode exposing (..)

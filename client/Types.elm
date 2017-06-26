@@ -14,7 +14,6 @@ type alias Model =
     , questions : List Question
     , activeQuestionId : Maybe QuestionId
     , uuidSeed : Pcg.Seed
-    , serverSocketAddress : String
     , serverMessages : List String
     }
 
@@ -84,7 +83,6 @@ initialModel startTime =
         , questions = [ newQuestion [] uuid ]
         , activeQuestionId = Nothing
         , uuidSeed = seed
-        , serverSocketAddress = "0.0.0.0:8000"
         , serverMessages = []
         }
 
@@ -102,17 +100,20 @@ newQuestion existingQuestions uuid =
         }
 
 
-newOption : Maybe QuestionId -> Uuid -> Maybe Option
-newOption questionId uuid =
-    case questionId of
-        Just id ->
-            Just
-                { id = Just uuid
-                , text = ""
-                }
+newOption : Uuid -> Option
+newOption uuid =
+    { id = Just uuid
+    , text = ""
+    }
 
-        Nothing ->
-            Nothing
+
+newUuid : Model -> ( Model, Uuid.Uuid )
+newUuid model =
+    let
+        ( newUuid, newSeed ) =
+            Pcg.step Uuid.uuidGenerator model.uuidSeed
+    in
+        ( { model | uuidSeed = newSeed }, newUuid )
 
 
 questionFormats : List String

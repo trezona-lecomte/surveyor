@@ -10083,40 +10083,28 @@ var _user$project$Types$questionFormats = {
 		_1: {ctor: '[]'}
 	}
 };
-var _user$project$Types$newOption = F2(
-	function (questionId, uuid) {
-		var _p0 = questionId;
-		if (_p0.ctor === 'Just') {
-			return _elm_lang$core$Maybe$Just(
-				{
-					id: _elm_lang$core$Maybe$Just(uuid),
-					text: ''
-				});
-		} else {
-			return _elm_lang$core$Maybe$Nothing;
-		}
-	});
-var _user$project$Types$Model = function (a) {
-	return function (b) {
-		return function (c) {
-			return function (d) {
-				return function (e) {
-					return function (f) {
-						return function (g) {
-							return function (h) {
-								return function (i) {
-									return function (j) {
-										return {userName: a, title: b, description: c, tabs: d, activeTab: e, questions: f, activeQuestionId: g, uuidSeed: h, serverSocketAddress: i, serverMessages: j};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
+var _user$project$Types$newUuid = function (model) {
+	var _p0 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
+	var newUuid = _p0._0;
+	var newSeed = _p0._1;
+	return {
+		ctor: '_Tuple2',
+		_0: _elm_lang$core$Native_Utils.update(
+			model,
+			{uuidSeed: newSeed}),
+		_1: newUuid
 	};
 };
+var _user$project$Types$newOption = function (uuid) {
+	return {
+		id: _elm_lang$core$Maybe$Just(uuid),
+		text: ''
+	};
+};
+var _user$project$Types$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {userName: a, title: b, description: c, tabs: d, activeTab: e, questions: f, activeQuestionId: g, uuidSeed: h, serverMessages: i};
+	});
 var _user$project$Types$Flags = function (a) {
 	return {startTime: a};
 };
@@ -10182,7 +10170,6 @@ var _user$project$Types$initialModel = function (startTime) {
 		},
 		activeQuestionId: _elm_lang$core$Maybe$Nothing,
 		uuidSeed: seed,
-		serverSocketAddress: '0.0.0.0:8000',
 		serverMessages: {ctor: '[]'}
 	};
 };
@@ -10215,7 +10202,7 @@ var _user$project$Types$OpenAnswer = function (a) {
 	return {ctor: 'OpenAnswer', _0: a};
 };
 
-var _user$project$SurveyJson$encodeOption = function (option) {
+var _user$project$JSON$encodeOption = function (option) {
 	var encodedUuid = function () {
 		var _p0 = option.id;
 		if (_p0.ctor === 'Just') {
@@ -10240,7 +10227,7 @@ var _user$project$SurveyJson$encodeOption = function (option) {
 			}
 		});
 };
-var _user$project$SurveyJson$encodeQuestion = function (question) {
+var _user$project$JSON$encodeQuestion = function (question) {
 	var questionIdEncoder = function () {
 		var _p1 = question.id;
 		if (_p1.ctor === 'Just') {
@@ -10275,7 +10262,7 @@ var _user$project$SurveyJson$encodeQuestion = function (question) {
 							ctor: '_Tuple2',
 							_0: 'options',
 							_1: _elm_lang$core$Json_Encode$list(
-								A2(_elm_lang$core$List$map, _user$project$SurveyJson$encodeOption, question.options))
+								A2(_elm_lang$core$List$map, _user$project$JSON$encodeOption, question.options))
 						},
 						_1: {ctor: '[]'}
 					}
@@ -10283,7 +10270,7 @@ var _user$project$SurveyJson$encodeQuestion = function (question) {
 			}
 		});
 };
-var _user$project$SurveyJson$modelEncoder = function (model) {
+var _user$project$JSON$modelEncoder = function (model) {
 	return _elm_lang$core$Json_Encode$object(
 		{
 			ctor: '::',
@@ -10305,20 +10292,20 @@ var _user$project$SurveyJson$modelEncoder = function (model) {
 						ctor: '_Tuple2',
 						_0: 'questions',
 						_1: _elm_lang$core$Json_Encode$list(
-							A2(_elm_lang$core$List$map, _user$project$SurveyJson$encodeQuestion, model.questions))
+							A2(_elm_lang$core$List$map, _user$project$JSON$encodeQuestion, model.questions))
 					},
 					_1: {ctor: '[]'}
 				}
 			}
 		});
 };
-var _user$project$SurveyJson$encodeModel = function (model) {
+var _user$project$JSON$encodeModel = function (model) {
 	return A2(
 		_elm_lang$core$Json_Encode$encode,
 		0,
-		_user$project$SurveyJson$modelEncoder(model));
+		_user$project$JSON$modelEncoder(model));
 };
-var _user$project$SurveyJson$questionFormatFromString = function (format) {
+var _user$project$JSON$questionFormatFromString = function (format) {
 	var _p2 = format;
 	switch (_p2) {
 		case 'OpenEnded':
@@ -10333,7 +10320,7 @@ var _user$project$SurveyJson$questionFormatFromString = function (format) {
 			return _elm_lang$core$Json_Decode$fail(format);
 	}
 };
-var _user$project$SurveyJson$uuidFromString = function (uuid) {
+var _user$project$JSON$uuidFromString = function (uuid) {
 	var _p3 = _danyx23$elm_uuid$Uuid$fromString(uuid);
 	if (_p3.ctor === 'Just') {
 		return _elm_lang$core$Json_Decode$succeed(
@@ -10342,24 +10329,24 @@ var _user$project$SurveyJson$uuidFromString = function (uuid) {
 		return _elm_lang$core$Json_Decode$fail(uuid);
 	}
 };
-var _user$project$SurveyJson$questionFormatDecoder = A2(_elm_lang$core$Json_Decode$andThen, _user$project$SurveyJson$questionFormatFromString, _elm_lang$core$Json_Decode$string);
-var _user$project$SurveyJson$uuidDecoder = A2(_elm_lang$core$Json_Decode$andThen, _user$project$SurveyJson$uuidFromString, _elm_lang$core$Json_Decode$string);
-var _user$project$SurveyJson$optionDecoder = A3(
+var _user$project$JSON$questionFormatDecoder = A2(_elm_lang$core$Json_Decode$andThen, _user$project$JSON$questionFormatFromString, _elm_lang$core$Json_Decode$string);
+var _user$project$JSON$uuidDecoder = A2(_elm_lang$core$Json_Decode$andThen, _user$project$JSON$uuidFromString, _elm_lang$core$Json_Decode$string);
+var _user$project$JSON$optionDecoder = A3(
 	_elm_lang$core$Json_Decode$map2,
 	_user$project$Types$Option,
-	A2(_elm_lang$core$Json_Decode$field, 'optionId', _user$project$SurveyJson$uuidDecoder),
+	A2(_elm_lang$core$Json_Decode$field, 'optionId', _user$project$JSON$uuidDecoder),
 	A2(_elm_lang$core$Json_Decode$field, 'text', _elm_lang$core$Json_Decode$string));
-var _user$project$SurveyJson$questionDecoder = A5(
+var _user$project$JSON$questionDecoder = A5(
 	_elm_lang$core$Json_Decode$map4,
 	_user$project$Types$Question,
-	A2(_elm_lang$core$Json_Decode$field, 'questionId', _user$project$SurveyJson$uuidDecoder),
-	A2(_elm_lang$core$Json_Decode$field, 'format', _user$project$SurveyJson$questionFormatDecoder),
+	A2(_elm_lang$core$Json_Decode$field, 'questionId', _user$project$JSON$uuidDecoder),
+	A2(_elm_lang$core$Json_Decode$field, 'format', _user$project$JSON$questionFormatDecoder),
 	A2(_elm_lang$core$Json_Decode$field, 'prompt', _elm_lang$core$Json_Decode$string),
 	A2(
 		_elm_lang$core$Json_Decode$field,
 		'options',
-		_elm_lang$core$Json_Decode$list(_user$project$SurveyJson$optionDecoder)));
-var _user$project$SurveyJson$surveyDecoder = A4(
+		_elm_lang$core$Json_Decode$list(_user$project$JSON$optionDecoder)));
+var _user$project$JSON$surveyDecoder = A4(
 	_elm_lang$core$Json_Decode$map3,
 	_user$project$Types$Survey,
 	A2(_elm_lang$core$Json_Decode$field, 'title', _elm_lang$core$Json_Decode$string),
@@ -10367,8 +10354,64 @@ var _user$project$SurveyJson$surveyDecoder = A4(
 	A2(
 		_elm_lang$core$Json_Decode$field,
 		'questions',
-		_elm_lang$core$Json_Decode$list(_user$project$SurveyJson$questionDecoder)));
-var _user$project$SurveyJson$decodeSurvey = _elm_lang$core$Json_Decode$decodeString(_user$project$SurveyJson$surveyDecoder);
+		_elm_lang$core$Json_Decode$list(_user$project$JSON$questionDecoder)));
+var _user$project$JSON$decodeSurvey = _elm_lang$core$Json_Decode$decodeString(_user$project$JSON$surveyDecoder);
+
+var _user$project$WS$receiveFromServer = F2(
+	function (model, message) {
+		var _p0 = _user$project$JSON$decodeSurvey(message);
+		if (_p0.ctor === 'Ok') {
+			var _p1 = _p0._0;
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{
+					title: _p1.title,
+					description: _p1.description,
+					questions: _p1.questions,
+					serverMessages: {ctor: '::', _0: message, _1: model.serverMessages}
+				});
+		} else {
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{
+					serverMessages: A2(
+						_elm_lang$core$Basics_ops['++'],
+						{
+							ctor: '::',
+							_0: _p0._0,
+							_1: {
+								ctor: '::',
+								_0: message,
+								_1: {ctor: '[]'}
+							}
+						},
+						model.serverMessages)
+				});
+		}
+	});
+var _user$project$WS$server = 'ws://0.0.0.0:8000';
+var _user$project$WS$register = function (model) {
+	return A2(
+		_elm_lang$websocket$WebSocket$send,
+		_user$project$WS$server,
+		A2(_elm_lang$core$Basics_ops['++'], 'register as ', model.userName));
+};
+var _user$project$WS$listen = function (model) {
+	return _elm_lang$websocket$WebSocket$listen(_user$project$WS$server);
+};
+var _user$project$WS$sendToServer = function (model) {
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		model,
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$websocket$WebSocket$send,
+				_user$project$WS$server,
+				_user$project$JSON$encodeModel(model)),
+			_1: {ctor: '[]'}
+		});
+};
 
 var _user$project$Surveyor$questionFormatOption = F2(
 	function (question, format) {
@@ -10604,36 +10647,32 @@ var _user$project$Surveyor$viewServerMessage = function (message) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$Surveyor$removeOption = F3(
-	function (removedFromQuestion, option, question) {
-		return _elm_lang$core$Native_Utils.eq(question, removedFromQuestion) ? _elm_lang$core$Native_Utils.update(
-			question,
-			{
-				options: A2(
-					_elm_lang$core$List$filter,
-					F2(
-						function (x, y) {
-							return !_elm_lang$core$Native_Utils.eq(x, y);
-						})(option),
-					question.options)
-			}) : question;
-	});
-var _user$project$Surveyor$editOption = F4(
-	function (editedQuestion, editedOption, newText, question) {
-		var editOptionInQuestion = function (option) {
-			return _elm_lang$core$Native_Utils.eq(option.id, editedOption.id) ? _elm_lang$core$Native_Utils.update(
-				option,
-				{text: newText}) : option;
+var _user$project$Surveyor$removeOption = F2(
+	function (questions, removedOption) {
+		var removeOptionFromQuestion = function (question) {
+			return _elm_lang$core$Native_Utils.update(
+				question,
+				{
+					options: A2(
+						_elm_lang$core$List$filter,
+						F2(
+							function (x, y) {
+								return !_elm_lang$core$Native_Utils.eq(x, y);
+							})(removedOption),
+						question.options)
+				});
 		};
-		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
-			question,
-			{
-				options: A2(_elm_lang$core$List$map, editOptionInQuestion, question.options)
-			}) : question;
+		return A2(_elm_lang$core$List$map, removeOptionFromQuestion, questions);
 	});
-var _user$project$Surveyor$addOption = F3(
-	function (option, addedOnQuestion, question) {
-		return _elm_lang$core$Native_Utils.eq(question, addedOnQuestion) ? _elm_lang$core$Native_Utils.update(
+var _user$project$Surveyor$editOptionText = F2(
+	function (newText, option) {
+		return _elm_lang$core$Native_Utils.update(
+			option,
+			{text: newText});
+	});
+var _user$project$Surveyor$addOption = F2(
+	function (option, question) {
+		return _elm_lang$core$Native_Utils.update(
 			question,
 			{
 				options: A2(
@@ -10644,248 +10683,186 @@ var _user$project$Surveyor$addOption = F3(
 						_0: option,
 						_1: {ctor: '[]'}
 					})
-			}) : question;
+			});
 	});
-var _user$project$Surveyor$editPrompt = F3(
-	function (editedQuestion, newPrompt, question) {
-		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
+var _user$project$Surveyor$editPrompt = F2(
+	function (newPrompt, question) {
+		return _elm_lang$core$Native_Utils.update(
 			question,
-			{prompt: newPrompt}) : question;
+			{prompt: newPrompt});
 	});
-var _user$project$Surveyor$editFormat = F3(
-	function (editedQuestion, newFormat, question) {
-		return _elm_lang$core$Native_Utils.eq(question, editedQuestion) ? _elm_lang$core$Native_Utils.update(
+var _user$project$Surveyor$editFormat = F2(
+	function (newFormat, question) {
+		return _elm_lang$core$Native_Utils.update(
 			question,
 			{
 				format: _user$project$Types$parseQuestionFormat(newFormat)
-			}) : question;
+			});
 	});
-var _user$project$Surveyor$receiveFromServer = F2(
-	function (model, message) {
-		var _p0 = _user$project$SurveyJson$decodeSurvey(message);
-		if (_p0.ctor === 'Ok') {
-			var _p1 = _p0._0;
+var _user$project$Surveyor$editOption = F3(
+	function (model, editedOption, edit) {
+		var applyIfEdited = function (option) {
+			return _elm_lang$core$Native_Utils.eq(option.id, editedOption.id) ? edit(option) : option;
+		};
+		var editOptionInQuestion = function (question) {
 			return _elm_lang$core$Native_Utils.update(
-				model,
+				question,
 				{
-					title: _p1.title,
-					description: _p1.description,
-					questions: _p1.questions,
-					serverMessages: {ctor: '::', _0: message, _1: model.serverMessages}
+					options: A2(_elm_lang$core$List$map, applyIfEdited, question.options)
 				});
-		} else {
-			return _elm_lang$core$Native_Utils.update(
-				model,
-				{
-					serverMessages: A2(
-						_elm_lang$core$Basics_ops['++'],
-						{
-							ctor: '::',
-							_0: _p0._0,
-							_1: {
-								ctor: '::',
-								_0: message,
-								_1: {ctor: '[]'}
-							}
-						},
-						model.serverMessages)
-				});
-		}
+		};
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				questions: A2(_elm_lang$core$List$map, editOptionInQuestion, model.questions)
+			});
 	});
-var _user$project$Surveyor$sendToServer = function (model) {
-	return A2(
-		_elm_lang$core$Platform_Cmd_ops['!'],
-		model,
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$websocket$WebSocket$send,
-				A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
-				_user$project$SurveyJson$encodeModel(model)),
-			_1: {ctor: '[]'}
-		});
-};
-var _user$project$Surveyor$register = function (model) {
-	var msg = A2(_elm_lang$core$Basics_ops['++'], 'register as ', model.userName);
-	return A2(
-		_elm_lang$websocket$WebSocket$send,
-		A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
-		msg);
-};
+var _user$project$Surveyor$editQuestion = F3(
+	function (editedQuestion, questions, edit) {
+		var applyIfEdited = function (question) {
+			return _elm_lang$core$Native_Utils.eq(question.id, editedQuestion.id) ? edit(question) : question;
+		};
+		return A2(_elm_lang$core$List$map, applyIfEdited, questions);
+	});
 var _user$project$Surveyor$init = function (flags) {
 	var model = _user$project$Types$initialModel(flags.startTime);
 	return {
 		ctor: '_Tuple2',
 		_0: model,
-		_1: _user$project$Surveyor$register(model)
+		_1: _user$project$WS$register(model)
 	};
 };
-var _user$project$Surveyor$selectOptionText = _elm_lang$core$Native_Platform.outgoingPort(
-	'selectOptionText',
+var _user$project$Surveyor$selectOptionTextPort = _elm_lang$core$Native_Platform.outgoingPort(
+	'selectOptionTextPort',
 	function (v) {
 		return v;
 	});
+var _user$project$Surveyor$selectOptionText = function (option) {
+	var _p0 = option.id;
+	if (_p0.ctor === 'Just') {
+		return _user$project$Surveyor$selectOptionTextPort(
+			_danyx23$elm_uuid$Uuid$toString(_p0._0));
+	} else {
+		return _elm_lang$core$Platform_Cmd$none;
+	}
+};
 var _user$project$Surveyor$update = F2(
 	function (msg, model) {
-		var _p2 = msg;
-		switch (_p2.ctor) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
 			case 'TabClicked':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{activeTab: _p2._0}),
+						{activeTab: _p1._0}),
 					{ctor: '[]'});
 			case 'TitleEdited':
-				return _user$project$Surveyor$sendToServer(
+				return _user$project$WS$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{title: _p2._0}));
+						{title: _p1._0}));
 			case 'DescriptionEdited':
-				return _user$project$Surveyor$sendToServer(
+				return _user$project$WS$sendToServer(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{description: _p2._0}));
+						{description: _p1._0}));
 			case 'QuestionAdded':
-				var _p3 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
-				var newUuid = _p3._0;
-				var newSeed = _p3._1;
-				return _user$project$Surveyor$sendToServer(
+				var _p2 = _user$project$Types$newUuid(model);
+				var newModel = _p2._0;
+				var uuid = _p2._1;
+				return _user$project$WS$sendToServer(
 					_elm_lang$core$Native_Utils.update(
-						model,
+						newModel,
 						{
-							uuidSeed: newSeed,
 							questions: A2(
 								_elm_lang$core$Basics_ops['++'],
 								model.questions,
 								{
 									ctor: '::',
-									_0: A2(_user$project$Types$newQuestion, model.questions, newUuid),
+									_0: A2(_user$project$Types$newQuestion, model.questions, uuid),
 									_1: {ctor: '[]'}
 								})
 						}));
 			case 'QuestionClicked':
-				var _p4 = _p2._0;
-				if (_p4.ctor === 'Just') {
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{
-								activeQuestionId: _elm_lang$core$Maybe$Just(_p4._0)
-							}),
-						{ctor: '[]'});
-				} else {
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{activeQuestionId: _elm_lang$core$Maybe$Nothing}),
-						{ctor: '[]'});
-				}
-			case 'FormatSelected':
-				return _user$project$Surveyor$sendToServer(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								A2(_user$project$Surveyor$editFormat, _p2._0, _p2._1),
-								model.questions)
-						}));
-			case 'PromptEdited':
-				return _user$project$Surveyor$sendToServer(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								A2(_user$project$Surveyor$editPrompt, _p2._0, _p2._1),
-								model.questions)
-						}));
-			case 'OptionAdded':
-				var _p7 = _p2._0;
-				var _p5 = A2(_mgold$elm_random_pcg$Random_Pcg$step, _danyx23$elm_uuid$Uuid$uuidGenerator, model.uuidSeed);
-				var newUuid = _p5._0;
-				var newSeed = _p5._1;
-				var option = A2(_user$project$Types$newOption, _p7.id, newUuid);
-				var _p6 = option;
-				if (_p6.ctor === 'Just') {
-					return _user$project$Surveyor$sendToServer(
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{
-								uuidSeed: newSeed,
-								questions: A2(
-									_elm_lang$core$List$map,
-									A2(_user$project$Surveyor$addOption, _p6._0, _p7),
-									model.questions)
-							}));
-				} else {
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						model,
-						{ctor: '[]'});
-				}
-			case 'OptionEdited':
-				return _user$project$Surveyor$sendToServer(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								A3(_user$project$Surveyor$editOption, _p2._0, _p2._1, _p2._2),
-								model.questions)
-						}));
-			case 'OptionRemoved':
-				return _user$project$Surveyor$sendToServer(
-					_elm_lang$core$Native_Utils.update(
-						model,
-						{
-							questions: A2(
-								_elm_lang$core$List$map,
-								A2(_user$project$Surveyor$removeOption, _p2._0, _p2._1),
-								model.questions)
-						}));
-			case 'SelectOptionText':
-				var _p8 = _p2._0.id;
-				if (_p8.ctor === 'Just') {
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						model,
-						{
-							ctor: '::',
-							_0: _user$project$Surveyor$selectOptionText(
-								_danyx23$elm_uuid$Uuid$toString(_p8._0)),
-							_1: {ctor: '[]'}
-						});
-				} else {
-					return A2(
-						_elm_lang$core$Platform_Cmd_ops['!'],
-						model,
-						{ctor: '[]'});
-				}
-			case 'ReceiveMessage':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
-					A2(_user$project$Surveyor$receiveFromServer, model, _p2._0),
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{activeQuestionId: _p1._0}),
 					{ctor: '[]'});
-			default:
+			case 'FormatSelected':
+				return _user$project$WS$sendToServer(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A3(
+								_user$project$Surveyor$editQuestion,
+								_p1._0,
+								model.questions,
+								_user$project$Surveyor$editFormat(_p1._1))
+						}));
+			case 'PromptEdited':
+				return _user$project$WS$sendToServer(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A3(
+								_user$project$Surveyor$editQuestion,
+								_p1._0,
+								model.questions,
+								_user$project$Surveyor$editPrompt(_p1._1))
+						}));
+			case 'OptionAdded':
+				var _p3 = _user$project$Types$newUuid(model);
+				var newModel = _p3._0;
+				var uuid = _p3._1;
+				var option = _user$project$Types$newOption(uuid);
+				return _user$project$WS$sendToServer(
+					_elm_lang$core$Native_Utils.update(
+						newModel,
+						{
+							questions: A3(
+								_user$project$Surveyor$editQuestion,
+								_p1._0,
+								model.questions,
+								_user$project$Surveyor$addOption(option))
+						}));
+			case 'OptionEdited':
+				return _user$project$WS$sendToServer(
+					A3(
+						_user$project$Surveyor$editOption,
+						model,
+						_p1._0,
+						_user$project$Surveyor$editOptionText(_p1._1)));
+			case 'OptionRemoved':
+				return _user$project$WS$sendToServer(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							questions: A2(_user$project$Surveyor$removeOption, model.questions, _p1._1)
+						}));
+			case 'SelectOptionText':
 				return A2(
 					_elm_lang$core$Platform_Cmd_ops['!'],
 					model,
+					{
+						ctor: '::',
+						_0: _user$project$Surveyor$selectOptionText(_p1._0),
+						_1: {ctor: '[]'}
+					});
+			default:
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					A2(_user$project$WS$receiveFromServer, model, _p1._0),
 					{ctor: '[]'});
 		}
 	});
-var _user$project$Surveyor$NoOp = {ctor: 'NoOp'};
 var _user$project$Surveyor$ReceiveMessage = function (a) {
 	return {ctor: 'ReceiveMessage', _0: a};
 };
 var _user$project$Surveyor$subscriptions = function (model) {
-	return A2(
-		_elm_lang$websocket$WebSocket$listen,
-		A2(_elm_lang$core$Basics_ops['++'], 'ws://', model.serverSocketAddress),
-		_user$project$Surveyor$ReceiveMessage);
+	return A2(_user$project$WS$listen, model, _user$project$Surveyor$ReceiveMessage);
 };
 var _user$project$Surveyor$SelectOptionText = function (a) {
 	return {ctor: 'SelectOptionText', _0: a};
@@ -10894,16 +10871,16 @@ var _user$project$Surveyor$OptionRemoved = F2(
 	function (a, b) {
 		return {ctor: 'OptionRemoved', _0: a, _1: b};
 	});
-var _user$project$Surveyor$OptionEdited = F3(
-	function (a, b, c) {
-		return {ctor: 'OptionEdited', _0: a, _1: b, _2: c};
+var _user$project$Surveyor$OptionEdited = F2(
+	function (a, b) {
+		return {ctor: 'OptionEdited', _0: a, _1: b};
 	});
 var _user$project$Surveyor$viewOption = F2(
 	function (question, option) {
 		var uuid = function () {
-			var _p9 = option.id;
-			if (_p9.ctor === 'Just') {
-				return _danyx23$elm_uuid$Uuid$toString(_p9._0);
+			var _p4 = option.id;
+			if (_p4.ctor === 'Just') {
+				return _danyx23$elm_uuid$Uuid$toString(_p4._0);
 			} else {
 				return '';
 			}
@@ -10937,12 +10914,8 @@ var _user$project$Surveyor$viewOption = F2(
 										_elm_lang$core$Basics$toString(question.id)),
 									_1: {
 										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(_user$project$Surveyor$NoOp),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$disabled(true),
-											_1: {ctor: '[]'}
-										}
+										_0: _elm_lang$html$Html_Attributes$disabled(true),
+										_1: {ctor: '[]'}
 									}
 								}
 							},
@@ -10977,7 +10950,7 @@ var _user$project$Surveyor$viewOption = F2(
 												_1: {
 													ctor: '::',
 													_0: _elm_lang$html$Html_Events$onInput(
-														A2(_user$project$Surveyor$OptionEdited, question, option)),
+														_user$project$Surveyor$OptionEdited(option)),
 													_1: {
 														ctor: '::',
 														_0: _elm_lang$html$Html_Events$onFocus(
@@ -11211,9 +11184,9 @@ var _user$project$Surveyor$QuestionClicked = function (a) {
 var _user$project$Surveyor$editableQuestion = F3(
 	function (model, question, elements) {
 		var activeClass = function () {
-			var _p10 = {ctor: '_Tuple2', _0: model.activeQuestionId, _1: question.id};
-			if (((_p10.ctor === '_Tuple2') && (_p10._0.ctor === 'Just')) && (_p10._1.ctor === 'Just')) {
-				return _elm_lang$core$Native_Utils.eq(_p10._1._0, _p10._0._0) ? '  is-active' : '';
+			var _p5 = {ctor: '_Tuple2', _0: model.activeQuestionId, _1: question.id};
+			if (((_p5.ctor === '_Tuple2') && (_p5._0.ctor === 'Just')) && (_p5._1.ctor === 'Just')) {
+				return _elm_lang$core$Native_Utils.eq(_p5._1._0, _p5._0._0) ? '  is-active' : '';
 			} else {
 				return '';
 			}
@@ -11280,8 +11253,8 @@ var _user$project$Surveyor$editableQuestion = F3(
 var _user$project$Surveyor$viewQuestion = F2(
 	function (model, question) {
 		var options = function () {
-			var _p11 = question.format;
-			switch (_p11.ctor) {
+			var _p6 = question.format;
+			switch (_p6.ctor) {
 				case 'OpenEnded':
 					return {
 						ctor: '::',

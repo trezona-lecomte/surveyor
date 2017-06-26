@@ -22,7 +22,7 @@
        startTime: Date.now()
      });
 
-     app.ports.selectOptionText.subscribe(function(optionSelectId) {
+     app.ports.selectOptionTextPort.subscribe(function(optionSelectId) {
        var optionInput = document.getElementById(optionSelectId);
 
        optionInput.focus();
