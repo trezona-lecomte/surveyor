@@ -1,4 +1,4 @@
-module WS exposing (..)
+module WS exposing (register, listen, send, receive)
 
 import JSON
 import Types exposing (..)

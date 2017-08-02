@@ -12,7 +12,7 @@ import           Data.Aeson                     as Aeson (FromJSON, ToJSON,
                                                           defaultOptions,
                                                           encode)
 import qualified Data.Maybe                     as Maybe
-import qualified Data.Monoid                    as Monoid (mappend)
+import qualified Data.Monoid                    as Monoid ((<>))
 import qualified Data.Set                       as Set
 import qualified Data.String.Conversions        as Conversions (cs)
 import           Data.Text                      as Text
@@ -79,8 +79,8 @@ instance FromJSON Option
 
 initialState =
   State { clients = Set.empty
-              , survey = initialSurvey
-              }
+        , survey = initialSurvey
+        }
 
 initialSurvey =
   Survey { title = ""

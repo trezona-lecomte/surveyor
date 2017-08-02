@@ -6,6 +6,9 @@ import Types exposing (..)
 import Uuid exposing (Uuid)
 
 
+-- DECODING
+
+
 decodeSurvey : String -> Result String Survey
 decodeSurvey =
     decodeString surveyDecoder
@@ -72,6 +75,10 @@ questionFormatFromString format =
 
         _ ->
             Decode.fail format
+
+
+
+-- ENCODING
 
 
 modelEncoder : Model -> Decode.Value
